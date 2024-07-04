@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+model userEntity {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  rol     String   @default("user")
+  password  String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+
+model Department {
+  id         Int      @id @default(autoincrement())
+  name       String
+  carnets    Carnets? @relation(fields: [id_department], references: [id])
+  id_department   Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+model State{
+	id         Int      @id @default(autoincrement())
+    name       String
+    carnets    Carnets? @relation(fields: [id_state], references: [id])
+    id_state   Int?
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+}
+
+model Civil_statuses{
+	id         Int      @id @default(autoincrement())
+    name       String
+    carnets    Carnets? @relation(fields: [id_civil_statuses], references: [id])
+    id_civil_statuses  Int?
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+}
+
+model Municipalities{
+	id         Int      @id @default(autoincrement())
+    name       String
+    carnets    Carnets? @relation(fields: [id_municipalities], references: [id])
+    id_municipalities   Int?
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+}
+
+model Parishes{
+	id         Int      @id @default(autoincrement())
+    name       String
+    carnets    Carnets? @relation(fields: [id_parishes], references: [id])
+    id_parishes   Int?
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+}
+
+model Charge{
+	id         Int      @id @default(autoincrement())
+    name       String
+    carnets    Carnets? @relation(fields: [id_parishes], references: [id])
+    id_charge   Int?
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+}
+
+
+
+model Carnets {
+    id        Int      @id @default(autoincrement())
+    name String?
+    lastname String?
+    charge Charge[]
+    department Department[]
+    state State[]
+    civil_statuses Civil_statuses[]
+    municipalities Municipalities[]
+    parishes Parishes[]
+    card_code String?
+    expiration DateTime
+    note String?
+    cedule String?
+    extent String?
+    address String?
+    phone String?
+    cellpone String?
+    photo String?
+    qr String?
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+}
