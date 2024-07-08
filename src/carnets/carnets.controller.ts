@@ -17,11 +17,22 @@ export class CarnetsController {
   constructor(private readonly carnetsService: CarnetsService) {}
   
  
+
+  @UseGuards(JwtAuthGuard)
+  @Post('upload/:cedule')
+  @UseInterceptors(FileInterceptor('file'))
+  makeCarnet(@Param('cedule') cedule: string,@UploadedFile() file: Express.Multer.File) {
+    return this.carnetsService.fileUpload(file,cedule);
+  }
+
+
   @Get('make')
   carnet() {
     return this.carnetsService.make();
   }
 
+
+/*
   @UseGuards(JwtAuthGuard)
   @Post('upload')
    @UseInterceptors(FileInterceptor('file', {
@@ -40,6 +51,11 @@ export class CarnetsController {
     console.log(file);
     return { message: 'File uploaded successfully', file };
   }
+
+
+*/
+
+
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createCarnetDto: CreateCarnetDto) {

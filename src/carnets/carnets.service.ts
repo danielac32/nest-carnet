@@ -1,30 +1,229 @@
-import { Injectable, HttpStatus,ConflictException,NotFoundException,ExceptionFilter,HttpException, BadRequestException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UploadedFile,HttpStatus,ConflictException,NotFoundException,ExceptionFilter,HttpException, BadRequestException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { CreateCarnetDto } from './dto/create-carnet.dto';
 import { UpdateCarnetDto } from './dto/update-carnet.dto';
 import { PrismaService } from '../db-connections/prisma.service';
 import { createCanvas, loadImage } from 'canvas';
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 
 import { join } from 'path';
+
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+
+
 @Injectable()
 export class CarnetsService {
+private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
+
 
   constructor(
     private prisma: PrismaService,
     ) {}
 
+  
+async fileUpload(file: Express.Multer.File, cedule: string) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = extname(file.originalname);
+    const filename = `${uniqueSuffix}${ext}`;
+    const filePath = join(this.uploadPath, filename);
+    try {
+      // Asegúrate de que la carpeta de destino existe
+      await fs.ensureDir(this.uploadPath);
+      // Guarda el archivo
+      await fs.writeFile(filePath, file.buffer);
+
+      console.log(`File saved with name: ${filename} for cedule: ${cedule}`);
+      this.makeCarnet(filename,cedule);
+      await fs.emptyDir(this.uploadPath);
+      return { message: 'File uploaded successfully', filename, cedule };
+    } catch (error) {
+      console.error('Error saving file:', error);
+      throw new Error('File upload failed');
+    }
+  }
 
 
-  async make(){
-    const canvasWidth = 319; // Ancho del lienzo
-    const canvasHeight = 502; // Alto del lienzo
+
+
+
+private async getProfile(id:string) {
+    try{
+        const carnet = await this.prisma.carnets.findFirst({
+            where: {
+                    cedule: id
+            },
+            include: {
+              department:true,
+              charge:true,
+            }
+        });
+        return carnet;
+    } catch (error) {
+        throw new HttpException('Error findOne carnet', 500);
+    }
+  }
+
+ formatCedula(cedula: string) {
+  // Remover cualquier espacio en blanco
+  cedula = cedula.trim();
+
+  // Verificar si ya tiene el formato correcto (V-20.327.658)
+  if (/^V-\d{2}\.\d{3}\.\d{3}$/.test(cedula)) {
+    return cedula;
+  }
+
+  // Extraer solo los dígitos numéricos
+  const digits = cedula.replace(/\D/g, '');
+
+  // Verificar si la cédula tiene un formato válido de números
+  if (/^\d{7,8}$/.test(digits)) {
+    // Formatear según el formato V-20.327.658
+    const formatted = `V-${digits.substring(0, 2)}.${digits.substring(2, 5)}.${digits.substring(5)}`;
+    return formatted;
+  }
+
+  // Si no es posible formatear, devolver la cédula original
+  return cedula;
+}
+
+async makeCarnet(file:string,cedule: string){
+    let nombre:string = "";
+    let cedula:string = "";
+    let departamento:string="";
+    let cargo:string = "";
+    
+    
+    const person = await this.getProfile(cedule);
+    if(!person) throw new HttpException('Error findOne carnet', 500);
+    nombre = person.name + " " + person.lastname;
+    cedula = cedule;
+    departamento = person.department.name;
+    cargo= person.charge.name;
+
+    const canvasWidth = 1080;//319*2; // Ancho del lienzo
+    const canvasHeight = 1701;//502*2; // Alto del lienzo
     const canvas = createCanvas(canvasWidth, canvasHeight);
     const ctx = canvas.getContext('2d');
 
     // Cargar la imagen de carnet
-    const imagePath = path.join(__dirname, '..', '..', 'uploads', '1.jpg');
+    const imagePath = path.join(__dirname, '..', '..', 'uploads', 'IMG_20240703_204005_719.jpg');
     const carnetImage = await loadImage(imagePath);
+
+    ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
+
+
+    // Cargar la imagen que quieres superponer en el centro
+    const overlayImagePath = path.join(__dirname, '..', '..', 'tmp', file);
+    const overlayImage = await loadImage(overlayImagePath);
+    ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
+    
+    
+    const overlayWidth = (canvasWidth/2)-141;//400;
+    const overlayHeight = (canvasHeight/3)-42;//521;
+
+    // Calcular las coordenadas para centrar la imagen superpuesta
+    const overlayX = (canvasWidth - overlayImage.width) /2;
+    const overlayY = (canvasHeight - overlayImage.height) /3;
+    
+    const xx = (canvasWidth - overlayWidth) / 2;
+    const yy = (canvasHeight - overlayHeight) / 2;
+    const radius = 60; // Ajusta el radio de las esquinas redondeadas
+
+   await this.drawRoundedImage(ctx, overlayImage, xx, yy-188, overlayWidth, overlayHeight, radius);
+    // Superponer la imagen en el centro del lienzo
+    //ctx.drawImage(overlayImage, overlayX-91, overlayY-70,overlayWidth, overlayHeight);
+     
+    ctx.font = 'bold 65px arial'; // Definir el tamaño y la fuente del texto
+    ctx.fillStyle = '#000000'; // Color del texto (blanco en este caso)
+    ctx.textAlign = 'center'; // Alinear el texto al centro
+    let x:number=nombre.length;
+    let medio:number = canvasWidth /2;
+    let pos:number=(canvasWidth -x)/2
+    ctx.fillText(nombre.toUpperCase(), pos, (canvasHeight/2)+200);  
+    
+    ctx.font = '50px arial'; // Definir el tamaño y la fuente del texto
+    ctx.fillStyle = '#9B9B9B'; // Color del texto (blanco en este caso)
+    ctx.textAlign = 'center'; // Alinear el texto al centro
+    x=cedula.length;
+    medio= canvasWidth /2;
+    pos=(canvasWidth -x)/2
+    ctx.fillText(this.formatCedula(cedula), pos, (canvasHeight/2)+280);  
+    
+
+    ctx.font = '50px arial'; // Definir el tamaño y la fuente del texto
+    ctx.fillStyle = '#9B9B9B'; // Color del texto (blanco en este caso)
+    ctx.textAlign = 'center'; // Alinear el texto al centro
+    x=departamento.length;
+    medio= canvasWidth /2;
+    pos=(canvasWidth -x)/2
+    ctx.fillText(departamento.toUpperCase(), pos, (canvasHeight/2)+390);  
+
+
+    ctx.font = 'bold 75px arial'; // Definir el tamaño y la fuente del texto
+    ctx.fillStyle = '#000000'; // Color del texto (blanco en este caso)
+    ctx.textAlign = 'center'; // Alinear el texto al centro
+    x=cargo.length;
+    medio= canvasWidth /2;
+    pos=(canvasWidth -x)/2
+    ctx.fillText(cargo, pos, (canvasHeight/2)+570);  
+
+
+    // Guardar la imagen resultante
+    const outputFilePath = path.join(__dirname, '..', '..', 'uploads', file);
+    try {
+      const out = fs.createWriteStream(outputFilePath);
+      const stream = canvas.createJPEGStream({ quality: 200 });
+      stream.pipe(out);
+      out.on('finish', () => console.log(`Imagen guardada en ${outputFilePath}`));
+    } catch (error) {
+      console.error('Error al guardar la imagen:', error);
+      throw new Error('Error al guardar la imagen');
+    }
+
+    return { outputFilePath };
+  }
+
+
+
+async drawRoundedImage(ctx, img, x, y, width, height, radius) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+  ctx.clip();
+
+  // Dibujar la imagen dentro de la máscara
+  ctx.drawImage(img, x, y, width, height);
+
+  ctx.restore();
+}
+
+   
+  async make(){
+    const nombre:string = "Daniel E. Quintero V.";
+    const cedula:string = "V-20327658";
+    const departamento:string="Direccion general de tecnologia";
+    const cargo:string = "COORDINADOR";
+
+    const canvasWidth = 1080;//319*2; // Ancho del lienzo
+    const canvasHeight = 1701;//502*2; // Alto del lienzo
+    const canvas = createCanvas(canvasWidth, canvasHeight);
+    const ctx = canvas.getContext('2d');
+
+    // Cargar la imagen de carnet
+    const imagePath = path.join(__dirname, '..', '..', 'uploads', 'IMG_20240703_204005_719.jpg');
+    const carnetImage = await loadImage(imagePath);
+
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
 
 
@@ -32,39 +231,56 @@ export class CarnetsService {
     const overlayImagePath = path.join(__dirname, '..', '..', 'uploads', 'yo.png');
     const overlayImage = await loadImage(overlayImagePath);
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
-
     
-    const overlayWidth = 122;
-    const overlayHeight = 159;
+    
+    const overlayWidth = (canvasWidth/2)-141;//400;
+    const overlayHeight = (canvasHeight/3)-42;//521;
 
     // Calcular las coordenadas para centrar la imagen superpuesta
-    const overlayX = (canvasWidth - overlayImage.width) / 2;
-    const overlayY = (canvasHeight - overlayImage.height) / 2;
+    const overlayX = (canvasWidth - overlayImage.width) /2;
+    const overlayY = (canvasHeight - overlayImage.height) /3;
+    
+    const xx = (canvasWidth - overlayWidth) / 2;
+    const yy = (canvasHeight - overlayHeight) / 2;
+    const radius = 60; // Ajusta el radio de las esquinas redondeadas
 
+   await this.drawRoundedImage(ctx, overlayImage, xx, yy-188, overlayWidth, overlayHeight, radius);
     // Superponer la imagen en el centro del lienzo
-    ctx.drawImage(overlayImage, overlayX+46, overlayY+6,overlayWidth, overlayHeight);
-//   
-
-    // Agregar texto
-    ctx.font = '20px Arial'; // Definir el tamaño y la fuente del texto
+    //ctx.drawImage(overlayImage, overlayX-91, overlayY-70,overlayWidth, overlayHeight);
+     
+    ctx.font = 'bold 65px arial'; // Definir el tamaño y la fuente del texto
     ctx.fillStyle = '#000000'; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
-    ctx.fillText('Daniel Quintero', canvasWidth / 2, overlayY+195);  
+    let x:number=nombre.length;
+    let medio:number = canvasWidth /2;
+    let pos:number=(canvasWidth -x)/2
+    ctx.fillText(nombre, pos, (canvasHeight/2)+200);  
     
-    ctx.font = '18px Arial'; // Definir el tamaño y la fuente del texto
+    ctx.font = '50px arial'; // Definir el tamaño y la fuente del texto
     ctx.fillStyle = '#9B9B9B'; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
-    ctx.fillText('V-20327658', canvasWidth / 2, overlayY+223);  
+    x=cedula.length;
+    medio= canvasWidth /2;
+    pos=(canvasWidth -x)/2
+    ctx.fillText(cedula, pos, (canvasHeight/2)+280);  
+    
 
-    ctx.font = '15px Arial'; // Definir el tamaño y la fuente del texto
+    ctx.font = '50px arial'; // Definir el tamaño y la fuente del texto
     ctx.fillStyle = '#9B9B9B'; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
-    ctx.fillText('Direccion general de tecnologia', canvasWidth / 2, overlayY+260);  
-    
-    ctx.font = '20px Arial'; // Definir el tamaño y la fuente del texto
+    x=departamento.length;
+    medio= canvasWidth /2;
+    pos=(canvasWidth -x)/2
+    ctx.fillText(departamento, pos, (canvasHeight/2)+390);  
+
+
+    ctx.font = 'bold 75px arial'; // Definir el tamaño y la fuente del texto
     ctx.fillStyle = '#000000'; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
-    ctx.fillText('Coordinador', canvasWidth / 2, overlayY+307);
+    x=cargo.length;
+    medio= canvasWidth /2;
+    pos=(canvasWidth -x)/2
+    ctx.fillText(cargo, pos, (canvasHeight/2)+570);  
 
 
     // Guardar la imagen resultante
@@ -180,9 +396,10 @@ export class CarnetsService {
 
   async findAll() {
       const carnet = await this.prisma.carnets.findMany({
-        include: {
-          type_creations:true
-        }
+        /*include: {
+          type_creations:true,
+          department:true
+        }*/
       });
       return{
         carnet
