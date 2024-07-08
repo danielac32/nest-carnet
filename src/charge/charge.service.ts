@@ -1,26 +1,84 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus,ConflictException,NotFoundException,ExceptionFilter,HttpException, BadRequestException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { CreateChargeDto } from './dto/create-charge.dto';
 import { UpdateChargeDto } from './dto/update-charge.dto';
+import { PrismaService } from '../db-connections/prisma.service';
+
 
 @Injectable()
 export class ChargeService {
-  create(createChargeDto: CreateChargeDto) {
-    return 'This action adds a new charge';
+
+
+  constructor(
+    private prisma: PrismaService,
+    ) {}
+
+  async create(createChargeDto: CreateChargeDto) {
+    try{
+        const charges = await this.prisma.charge.create({
+                data:{
+                    ...createChargeDto,
+                }
+        });
+        return {
+            charges
+        }
+    } catch (error) {
+            throw new HttpException('Error creating charge', 500);
+    }
   }
 
-  findAll() {
-    return `This action returns all charge`;
+  async findAll() {
+    const charge = await this.prisma.charge.findMany();
+      return{
+        charge
+      }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} charge`;
+  private async getCharge(id:string) {
+    try{
+        const charge = await this.prisma.charge.findFirst({
+            where: {
+                    id: Number(id)
+            }
+        });
+        return charge;
+    } catch (error) {
+        throw new HttpException('Error findOne charge', 500);
+    }
   }
 
-  update(id: number, updateChargeDto: UpdateChargeDto) {
-    return `This action updates a #${id} charge`;
+  async findOne(id: string) {
+      const charge= await this.getCharge(id);
+      if(!charge)throw new NotFoundException(`Entity with ID ${id} not found`);
+      return {
+          charge
+      }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} charge`;
+  async update(id: string, updateChargeDto: UpdateChargeDto) {
+    const charge= await this.getCharge(id);
+    if(!charge)throw new NotFoundException(`Entity with ID ${id} not found`);
+
+    const updatedCharge = await this.prisma.charge.update({
+        where: {
+          id: charge.id
+        },
+        data:{
+          ...updateChargeDto
+        }
+    });
+    return {updatedCharge};
+  }
+
+  async remove(id: string) {
+    const charge= await this.getCharge(id);
+    if(!charge)throw new NotFoundException(`Entity with ID ${id} not found`);
+
+    const deletedCharge = await this.prisma.charge.delete({
+      where: {
+        id: charge.id
+      },
+    });
+    return {deletedCharge}
   }
 }

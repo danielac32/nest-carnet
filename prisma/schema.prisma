@@ -31,13 +31,7 @@ model Department {
   updated_at DateTime @default(now())
 }
 
-model State{
-	id         Int      @id @default(autoincrement())
-    name       String
-    carnet Carnets[]
-    created_at DateTime @default(now())
-    updated_at DateTime @default(now())
-}
+
 
 model Civil_statuses{
 	id         Int      @id @default(autoincrement())
@@ -47,18 +41,30 @@ model Civil_statuses{
     updated_at DateTime @default(now())
 }
 
+model State{
+    id         Int      @id @default(autoincrement())
+    name       String
+    carnet Carnets[]
+    //municipalities Municipalities[]
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+}
+
 model Municipalities{
 	id         Int      @id @default(autoincrement())
     name       String
-    carnet Carnets[]
+    //state    State? @relation(fields: [id_state], references: [id])
+    //id_state  Int?
+    //parishes Parishes[]
     created_at DateTime @default(now())
     updated_at DateTime @default(now())
 }
 
 model Parishes{
-	id         Int      @id @default(autoincrement())
+	  id         Int      @id @default(autoincrement())
     name       String
-    carnet Carnets[]
+    //municipalities    Municipalities? @relation(fields: [id_municipalitie], references: [id])
+    //id_municipalitie  Int?
     created_at DateTime @default(now())
     updated_at DateTime @default(now())
 }
@@ -74,7 +80,9 @@ model Charge{
 model Type_creations{
 	id         Int      @id @default(autoincrement())
     name       String
-    carnet Carnets[]
+    //carnet Carnets[]
+    carnet    Carnets? @relation(fields: [id_carnet], references: [id])
+    id_carnet  Int?
     created_at DateTime @default(now())
     updated_at DateTime @default(now())
 }
@@ -129,7 +137,7 @@ model Access_levels{
 }
 
 
-
+ 
 
 model Carnets {
     id        Int      @id @default(autoincrement())
@@ -154,8 +162,11 @@ model Carnets {
     id_charge  Int?
 
 
-    type_creations    Type_creations? @relation(fields: [id_type_creations], references: [id])
-    id_type_creations  Int?
+    //type_creations    Type_creations? @relation(fields: [id_type_creations], references: [id])
+    //id_type_creations  Int?
+    type_creations    Type_creations[]
+
+
 
     textures    Textures? @relation(fields: [id_textures], references: [id])
     id_textures  Int?
@@ -169,23 +180,21 @@ model Carnets {
     genders    Genders? @relation(fields: [id_genders], references: [id])
     id_genders  Int?
 
-    hair_colors    Hair_colors? @relation(fields: [id_department], references: [id])
+    hair_colors    Hair_colors? @relation(fields: [id_hair_colors], references: [id])
     id_hair_colors  Int?
 
     state    State? @relation(fields: [id_state], references: [id])
     id_state  Int?
-
+    
+    municipalities String?
+    parishes String?
+    
     skin_colors    Skin_colors? @relation(fields: [id_skin_colors], references: [id])
     id_skin_colors  Int?
 
     civil_statuses    Civil_statuses? @relation(fields: [id_civil_statuses], references: [id])
     id_civil_statuses  Int?
 
-    municipalities    Municipalities? @relation(fields: [id_municipalities], references: [id])
-    id_municipalities  Int?
-
-    parishes    Parishes? @relation(fields: [id_parishes], references: [id])
-    id_parishes  Int?
 
     created_at DateTime @default(now())
     updated_at DateTime @default(now())

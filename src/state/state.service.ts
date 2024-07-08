@@ -1,26 +1,84 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus,ConflictException,NotFoundException,ExceptionFilter,HttpException, BadRequestException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { CreateStateDto } from './dto/create-state.dto';
 import { UpdateStateDto } from './dto/update-state.dto';
+import { PrismaService } from '../db-connections/prisma.service';
+
 
 @Injectable()
 export class StateService {
-  create(createStateDto: CreateStateDto) {
-    return 'This action adds a new state';
+
+  constructor(
+    private prisma: PrismaService,
+    ) {}
+
+
+  async create(createStateDto: CreateStateDto) {
+    try{
+        const state = await this.prisma.state.create({
+                data:{
+                    ...createStateDto,
+                }
+        });
+        return {
+            state
+        }
+    } catch (error) {
+            throw new HttpException('Error creating state', 500);
+    }
   }
 
-  findAll() {
-    return `This action returns all state`;
+  async findAll() {
+    const state = await this.prisma.state.findMany();
+      return{
+        state
+      }
+  }
+  
+  private async getState(id:string) {
+    try{
+        const state = await this.prisma.state.findFirst({
+            where: {
+                    id: Number(id)
+            }
+        });
+        return state;
+    } catch (error) {
+        throw new HttpException('Error findOne state', 500);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} state`;
+  async findOne(id: string) {
+    const state= await this.getState(id);
+      if(!state)throw new NotFoundException(`Entity with ID ${id} not found`);
+      return {
+          state
+      }
   }
 
-  update(id: number, updateStateDto: UpdateStateDto) {
-    return `This action updates a #${id} state`;
+  async update(id: string, updateStateDto: UpdateStateDto) {
+   const state= await this.getState(id);
+    if(!state)throw new NotFoundException(`Entity with ID ${id} not found`);
+
+    const updatedState = await this.prisma.state.update({
+        where: {
+          id: state.id
+        },
+        data:{
+          ...updateStateDto
+        }
+    });
+    return {updatedState};
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} state`;
+  async remove(id: string) {
+    const state= await this.getState(id);
+    if(!state)throw new NotFoundException(`Entity with ID ${id} not found`);
+
+    const deletedState = await this.prisma.state.delete({
+      where: {
+        id: state.id
+      },
+    });
+    return {deletedState}
   }
 }
