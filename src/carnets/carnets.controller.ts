@@ -61,7 +61,7 @@ export class CarnetsController {
   create(@Body() createCarnetDto: CreateCarnetDto) {
     return this.carnetsService.create(createCarnetDto);
   }
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.carnetsService.findAll();

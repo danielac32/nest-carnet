@@ -19,8 +19,8 @@ import * as bcrypt from 'bcrypt';
 
 
 export const charges:Charges[]=[
-  { name: 'cargo 1' },
-  { name: 'cargo 2' },
+  { name: 'GERENTE' },
+  { name: 'PRESIDENTE' },
 ]
 
 

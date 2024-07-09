@@ -11,6 +11,8 @@ import { join } from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import{ValidCharge} from '../shared/TypeCharge.interface'
+
 
 
 @Injectable()
@@ -23,10 +25,10 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
     ) {}
 
   
-async fileUpload(file: Express.Multer.File, cedule: string) {
+  async fileUpload(file: Express.Multer.File, cedule: string) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const ext = extname(file.originalname);
-    const filename = `${uniqueSuffix}${ext}`;
+    const filename = cedule;//`${uniqueSuffix}${ext}`;
     const filePath = join(this.uploadPath, filename);
     try {
       // Asegúrate de que la carpeta de destino existe
@@ -36,11 +38,11 @@ async fileUpload(file: Express.Multer.File, cedule: string) {
 
       console.log(`File saved with name: ${filename} for cedule: ${cedule}`);
       this.makeCarnet(filename,cedule);
-      await fs.emptyDir(this.uploadPath);
+      //await fs.emptyDir(this.uploadPath);
       return { message: 'File uploaded successfully', filename, cedule };
     } catch (error) {
       console.error('Error saving file:', error);
-      throw new Error('File upload failed');
+      throw new HttpException('File upload failed', 500);//throw new Error('File upload failed');
     }
   }
 
@@ -93,14 +95,31 @@ async makeCarnet(file:string,cedule: string){
     let cedula:string = "";
     let departamento:string="";
     let cargo:string = "";
-    
+    let fondo:string='IMG_20240703_204005_719.jpg';
+
     
     const person = await this.getProfile(cedule);
-    if(!person) throw new HttpException('Error findOne carnet', 500);
+    if(!person) throw new HttpException('No existe el perfil', 500);
+    
+
+    const updatedCarnet = await this.prisma.carnets.update({
+        where: {
+          id:person.id
+        },
+        data:{
+          photo:file
+        }
+    });
+
+
     nombre = person.name + " " + person.lastname;
     cedula = cedule;
     departamento = person.department.name;
     cargo= person.charge.name;
+    
+    if(cargo === ValidCharge.GERENTE){
+       fondo = 'IMG_20240703_204010_456.jpg';
+    }
 
     const canvasWidth = 1080;//319*2; // Ancho del lienzo
     const canvasHeight = 1701;//502*2; // Alto del lienzo
@@ -108,7 +127,7 @@ async makeCarnet(file:string,cedule: string){
     const ctx = canvas.getContext('2d');
 
     // Cargar la imagen de carnet
-    const imagePath = path.join(__dirname, '..', '..', 'uploads', 'IMG_20240703_204005_719.jpg');
+    const imagePath = path.join(__dirname, '..', '..', 'image', fondo);
     const carnetImage = await loadImage(imagePath);
 
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
@@ -332,6 +351,14 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
            skin_colors,
            civil_statuses
     }=other;
+   
+
+   const exist = await this.prisma.carnets.findFirst({
+            where: {
+                    cedule: cedule
+            }
+        });
+   if(exist)throw new HttpException('El perfil ya esta registrado', 500);
 
    const carnet = await this.prisma.carnets.create({
           data:{
