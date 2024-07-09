@@ -30,7 +30,11 @@ export class CarnetsController {
   carnet() {
     return this.carnetsService.make();
   }
-
+  
+  @Post('test/:id')
+  test(@Param('id') id: string) {
+    return this.carnetsService.formatCedula(id);
+  }
 
 /*
   @UseGuards(JwtAuthGuard)
@@ -51,7 +55,6 @@ export class CarnetsController {
     console.log(file);
     return { message: 'File uploaded successfully', file };
   }
-
 
 */
 

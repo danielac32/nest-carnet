@@ -48,9 +48,7 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
 
 
 
-
-
-private async getProfile(id:string) {
+  private async getProfile(id:string) {
     try{
         const carnet = await this.prisma.carnets.findFirst({
             where: {
@@ -68,26 +66,14 @@ private async getProfile(id:string) {
   }
 
  formatCedula(cedula: string) {
-  // Remover cualquier espacio en blanco
-  cedula = cedula.trim();
-
-  // Verificar si ya tiene el formato correcto (V-20.327.658)
-  if (/^V-\d{2}\.\d{3}\.\d{3}$/.test(cedula)) {
-    return cedula;
+  if (!/^\d+$/.test(cedula)) {
+    throw new Error("Input must be a valid number string.");
   }
+  // Convertir el string a número entero
+  let num = parseInt(cedula, 10);
+  // Convertir el número a string con puntos como separadores de miles
+  return "V-"+num.toLocaleString('de-DE');
 
-  // Extraer solo los dígitos numéricos
-  const digits = cedula.replace(/\D/g, '');
-
-  // Verificar si la cédula tiene un formato válido de números
-  if (/^\d{7,8}$/.test(digits)) {
-    // Formatear según el formato V-20.327.658
-    const formatted = `V-${digits.substring(0, 2)}.${digits.substring(2, 5)}.${digits.substring(5)}`;
-    return formatted;
-  }
-
-  // Si no es posible formatear, devolver la cédula original
-  return cedula;
 }
 
 async makeCarnet(file:string,cedule: string){
@@ -263,7 +249,7 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
     const yy = (canvasHeight - overlayHeight) / 2;
     const radius = 60; // Ajusta el radio de las esquinas redondeadas
 
-   await this.drawRoundedImage(ctx, overlayImage, xx, yy-188, overlayWidth, overlayHeight, radius);
+    await this.drawRoundedImage(ctx, overlayImage, xx, yy-188, overlayWidth, overlayHeight, radius);
     // Superponer la imagen en el centro del lienzo
     //ctx.drawImage(overlayImage, overlayX-91, overlayY-70,overlayWidth, overlayHeight);
      
