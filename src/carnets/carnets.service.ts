@@ -125,8 +125,8 @@ async makeCarnet(file:string,cedule: string){
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
     
     
-    const overlayWidth = (canvasWidth/2)-141;//400;
-    const overlayHeight = (canvasHeight/3)-42;//521;
+    const overlayWidth = (canvasWidth/2)-140;//400;
+    const overlayHeight = (canvasHeight/3)-46;//521;
 
     // Calcular las coordenadas para centrar la imagen superpuesta
     const overlayX = (canvasWidth - overlayImage.width) /2;
@@ -136,7 +136,7 @@ async makeCarnet(file:string,cedule: string){
     const yy = (canvasHeight - overlayHeight) / 2;
     const radius = 60; // Ajusta el radio de las esquinas redondeadas
 
-   await this.drawRoundedImage(ctx, overlayImage, xx, yy-188, overlayWidth, overlayHeight, radius);
+   await this.drawRoundedImage(ctx, overlayImage, xx-3, yy-191, overlayWidth, overlayHeight, radius);
     // Superponer la imagen en el centro del lienzo
     //ctx.drawImage(overlayImage, overlayX-91, overlayY-70,overlayWidth, overlayHeight);
      
@@ -192,6 +192,7 @@ async makeCarnet(file:string,cedule: string){
 
 
 
+
 async drawRoundedImage(ctx, img, x, y, width, height, radius) {
   ctx.save();
   ctx.beginPath();
@@ -226,14 +227,14 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
     const ctx = canvas.getContext('2d');
 
     // Cargar la imagen de carnet
-    const imagePath = path.join(__dirname, '..', '..', 'uploads', 'IMG_20240703_204005_719.jpg');
+    const imagePath = path.join(__dirname, '..', '..', 'image', 'IMG_20240703_204005_719.jpg');
     const carnetImage = await loadImage(imagePath);
 
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
 
 
     // Cargar la imagen que quieres superponer en el centro
-    const overlayImagePath = path.join(__dirname, '..', '..', 'uploads', 'yo.png');
+    const overlayImagePath = path.join(__dirname, '..', '..', 'image', 'yo.png');
     const overlayImage = await loadImage(overlayImagePath);
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
     
@@ -312,9 +313,9 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
             expiration,
             note,
             cedule,
-            extent,
+            //extent,
             address,
-            phone,
+            //phone,
             cellpone,
             photo,
             qr,
@@ -328,14 +329,14 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
            department,
            charge,
            type_creations,
-           textures,
+           //textures,
            status,
            access_levels,
-           genders,
-           hair_colors,
+          // genders,
+          // hair_colors,
            state,
-           skin_colors,
-           civil_statuses
+          // skin_colors,
+          // civil_statuses
     }=other;
    
 
@@ -354,9 +355,9 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
                 expiration: expiration,
                 note: note,
                 cedule: cedule,
-                extent: extent,
+                //extent: extent,
                 address: address,
-                phone: phone,
+               // phone: phone,
                 cellpone: cellpone,
                 photo: photo,
                 qr: qr,
@@ -375,16 +376,16 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
                     //}
                    connect: { id: type_creations } 
                 },
-                textures: {
-                  connect: { id: textures }
-                },
+                //textures: {
+                //  connect: { id: textures }
+               // },
                 status: {
                   connect: { id: status }
                 },
                 access_levels: {
                   connect: { id: access_levels }
                 },
-                genders: {
+                /*genders: {
                   connect: { id: genders }
                 },
                 hair_colors: {
@@ -392,13 +393,13 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
                 },
                 skin_colors: {
                   connect: { id: skin_colors }
-                },
+                },*/
                 state: {
                   connect: { id: state }
                 },
-                civil_statuses: {
+                /*civil_statuses: {
                   connect: { id: civil_statuses }
-                },
+                },*/
           }
     });
 

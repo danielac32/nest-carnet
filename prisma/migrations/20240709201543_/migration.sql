@@ -133,28 +133,18 @@ CREATE TABLE "Carnets" (
     "qr" TEXT,
     "id_department" INTEGER,
     "id_charge" INTEGER,
-    "id_textures" INTEGER,
     "id_status" INTEGER,
     "id_access_levels" INTEGER,
-    "id_genders" INTEGER,
-    "id_hair_colors" INTEGER,
     "id_state" INTEGER,
     "municipalities" TEXT,
     "parishes" TEXT,
-    "id_skin_colors" INTEGER,
-    "id_civil_statuses" INTEGER,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Carnets_id_department_fkey" FOREIGN KEY ("id_department") REFERENCES "Department" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Carnets_id_charge_fkey" FOREIGN KEY ("id_charge") REFERENCES "Charge" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Carnets_id_textures_fkey" FOREIGN KEY ("id_textures") REFERENCES "Textures" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Carnets_id_status_fkey" FOREIGN KEY ("id_status") REFERENCES "Status" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Carnets_id_access_levels_fkey" FOREIGN KEY ("id_access_levels") REFERENCES "Access_levels" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Carnets_id_genders_fkey" FOREIGN KEY ("id_genders") REFERENCES "Genders" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Carnets_id_hair_colors_fkey" FOREIGN KEY ("id_hair_colors") REFERENCES "Hair_colors" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Carnets_id_state_fkey" FOREIGN KEY ("id_state") REFERENCES "State" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Carnets_id_skin_colors_fkey" FOREIGN KEY ("id_skin_colors") REFERENCES "Skin_colors" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Carnets_id_civil_statuses_fkey" FOREIGN KEY ("id_civil_statuses") REFERENCES "Civil_statuses" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "Carnets_id_state_fkey" FOREIGN KEY ("id_state") REFERENCES "State" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateIndex
