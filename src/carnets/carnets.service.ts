@@ -277,7 +277,11 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
     const ctx = canvas.getContext('2d');
 
     // Cargar la imagen de carnet
+<<<<<<< HEAD
     const imagePath = path.join(__dirname, '..', '..', 'image', 'frente-blanco.jpg');
+=======
+    const imagePath = path.join(__dirname, '..', '..', 'image', 'IMG_20240703_204005_719.jpg');
+>>>>>>> 130316e064f2d0d798d3eef159315545d226640b
     const carnetImage = await loadImage(imagePath);
 
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
