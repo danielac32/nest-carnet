@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,UseInterceptors, UploadedFile,UseGuards,Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Res,Patch, Param, Delete,UseInterceptors, UploadedFile,UseGuards,Query } from '@nestjs/common';
 import { CarnetsService } from './carnets.service';
 import { CreateCarnetDto } from './dto/create-carnet.dto';
 import { UpdateCarnetDto } from './dto/update-carnet.dto';
@@ -9,14 +9,43 @@ import { extname } from 'path';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { ApiBearerAuth } from '@nestjs/swagger';
-
+import { Response } from 'express';
 
 @ApiBearerAuth()
 @Controller('carnets')
 export class CarnetsController {
   constructor(private readonly carnetsService: CarnetsService) {}
   
+  
+
+  @Get('barcode')
+  async generateBarcode(@Query('number') number: string, @Query('filename') filename: string): Promise<string> {
+    if (!number || !filename) {
+      throw new Error('Number and filename are required');
+    }
+    return this.carnetsService.generateBarcode(number, filename);
+  }
+
+  @Get('qr')
+  async generateQr(@Query('data') data: string, @Query('filename') filename: string): Promise<string> {
+    if (!data) {
+      throw new Error('Data is required');
+    }
+    return this.carnetsService.generateQrCode(data,filename);
+  }
+
+
+  
+  @UseGuards(JwtAuthGuard)
+  @Get('files/:cedule')
+  getFile(@Param('cedule') cedule: string,@Res() res: Response) {
  
+      const filePath = this.carnetsService.getFilePath(cedule);
+      res.download(filePath); // Envía el archivo para su descarga
+   
+  }
+
+
 
   @UseGuards(JwtAuthGuard)
   @Post('upload/:cedule')

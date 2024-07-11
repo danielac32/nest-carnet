@@ -13,6 +13,9 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import{ValidCharge} from '../shared/TypeCharge.interface'
 
+import * as QRCode from 'qrcode';
+import JsBarcode from 'jsbarcode';
+
 
 
 @Injectable()
@@ -24,7 +27,53 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
     private prisma: PrismaService,
     ) {}
 
-  
+
+
+  async generateBarcode(number: string, filename: string): Promise<string> {
+    try {
+      const barcodePath = path.join(__dirname, '..', 'barcodes'); // Directorio para guardar los códigos de barras
+      const barcodeFilePath = path.join(barcodePath, `${filename}.png`);
+
+      // Crear un lienzo (canvas) para el código de barras con dimensiones específicas
+      const canvas = createCanvas(400, 200); // Ancho y alto del lienzo en píxeles
+      await JsBarcode(canvas, number, { format: 'CODE39' });
+
+      // Guardar el lienzo como archivo PNG
+      const out = fs.createWriteStream(barcodeFilePath);
+      const stream = canvas.createPNGStream();
+      stream.pipe(out);
+
+      return barcodeFilePath; // Devolver la ruta del archivo guardado
+    } catch (error) {
+      throw new Error(`Failed to generate barcode: ${error.message}`);
+    }
+  }
+
+  async generateQrCode(data: string,filename: string): Promise<string> {
+    try {
+      const qrCodePath = path.join(__dirname, '..','..', 'qr');
+      const qrCodeFilePath = path.join(qrCodePath, `${filename}.png`);
+      await QRCode.toFile(qrCodeFilePath, data);
+
+      return qrCodeFilePath; // Devolver la ruta del archivo guardado
+    } catch (error) {
+      throw new Error(`Failed to generate QR code: ${error.message}`);
+    }
+  }
+
+
+
+  getFilePath(filename: string): string {
+    const filePath = path.join(__dirname, '..','..', 'uploads', filename);
+
+    if (!fs.existsSync(filePath)) {
+      throw new HttpException('File not found', HttpStatus.NOT_FOUND);
+    }
+
+    return filePath;
+  }
+
+
   async fileUpload(file: Express.Multer.File, cedule: string) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const ext = extname(file.originalname);
@@ -42,7 +91,7 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
       return { message: 'File uploaded successfully', filename, cedule };
     } catch (error) {
       console.error('Error saving file:', error);
-      throw new HttpException('File upload failed', 500);//throw new Error('File upload failed');
+      throw new HttpException('Error saving file', 500);//throw new Error('File upload failed');
     }
   }
 
@@ -61,11 +110,11 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
         });
         return carnet;
     } catch (error) {
-        throw new HttpException('Error findOne carnet', 500);
+        throw new HttpException('Error findOne carnet', HttpStatus.NOT_FOUND);
     }
   }
 
- formatCedula(cedula: string) {
+formatCedula(cedula: string) {
   if (!/^\d+$/.test(cedula)) {
     throw new Error("Input must be a valid number string.");
   }
@@ -81,7 +130,7 @@ async makeCarnet(file:string,cedule: string){
     let cedula:string = "";
     let departamento:string="";
     let cargo:string = "";
-    let fondo:string='IMG_20240703_204005_719.jpg';
+    let fondo:string='frente-blanco.jpg';
 
     
     const person = await this.getProfile(cedule);
@@ -104,7 +153,7 @@ async makeCarnet(file:string,cedule: string){
     cargo= person.charge.name;
     
     if(cargo === ValidCharge.GERENTE){
-       fondo = 'IMG_20240703_204010_456.jpg';
+       fondo = 'frente-dorado.jpg';
     }
 
     const canvasWidth = 1080;//319*2; // Ancho del lienzo
@@ -125,8 +174,8 @@ async makeCarnet(file:string,cedule: string){
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
     
     
-    const overlayWidth = (canvasWidth/2)-141;//400;
-    const overlayHeight = (canvasHeight/3)-42;//521;
+    const overlayWidth = (canvasWidth/2)-140;//400;
+    const overlayHeight = (canvasHeight/3)-46;//521;
 
     // Calcular las coordenadas para centrar la imagen superpuesta
     const overlayX = (canvasWidth - overlayImage.width) /2;
@@ -136,7 +185,7 @@ async makeCarnet(file:string,cedule: string){
     const yy = (canvasHeight - overlayHeight) / 2;
     const radius = 60; // Ajusta el radio de las esquinas redondeadas
 
-   await this.drawRoundedImage(ctx, overlayImage, xx, yy-188, overlayWidth, overlayHeight, radius);
+   await this.drawRoundedImage(ctx, overlayImage, xx-3, yy-191, overlayWidth, overlayHeight, radius);
     // Superponer la imagen en el centro del lienzo
     //ctx.drawImage(overlayImage, overlayX-91, overlayY-70,overlayWidth, overlayHeight);
      
@@ -192,6 +241,7 @@ async makeCarnet(file:string,cedule: string){
 
 
 
+
 async drawRoundedImage(ctx, img, x, y, width, height, radius) {
   ctx.save();
   ctx.beginPath();
@@ -213,7 +263,8 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
   ctx.restore();
 }
 
-   
+
+/*********************************************************************************************/
   async make(){
     const nombre:string = "Daniel E. Quintero V.";
     const cedula:string = "V-20327658";
@@ -226,14 +277,14 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
     const ctx = canvas.getContext('2d');
 
     // Cargar la imagen de carnet
-    const imagePath = path.join(__dirname, '..', '..', 'uploads', 'IMG_20240703_204005_719.jpg');
+    const imagePath = path.join(__dirname, '..', '..', 'image', 'frente-blanco.jpg');
     const carnetImage = await loadImage(imagePath);
 
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
 
 
     // Cargar la imagen que quieres superponer en el centro
-    const overlayImagePath = path.join(__dirname, '..', '..', 'uploads', 'yo.png');
+    const overlayImagePath = path.join(__dirname, '..', '..', 'image', 'yo.png');
     const overlayImage = await loadImage(overlayImagePath);
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
     
@@ -312,9 +363,9 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
             expiration,
             note,
             cedule,
-            extent,
+            //extent,
             address,
-            phone,
+            //phone,
             cellpone,
             photo,
             qr,
@@ -328,14 +379,14 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
            department,
            charge,
            type_creations,
-           textures,
+           //textures,
            status,
            access_levels,
-           genders,
-           hair_colors,
+          // genders,
+          // hair_colors,
            state,
-           skin_colors,
-           civil_statuses
+          // skin_colors,
+          // civil_statuses
     }=other;
    
 
@@ -354,9 +405,9 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
                 expiration: expiration,
                 note: note,
                 cedule: cedule,
-                extent: extent,
+                //extent: extent,
                 address: address,
-                phone: phone,
+               // phone: phone,
                 cellpone: cellpone,
                 photo: photo,
                 qr: qr,
@@ -375,16 +426,16 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
                     //}
                    connect: { id: type_creations } 
                 },
-                textures: {
-                  connect: { id: textures }
-                },
+                //textures: {
+                //  connect: { id: textures }
+               // },
                 status: {
                   connect: { id: status }
                 },
                 access_levels: {
                   connect: { id: access_levels }
                 },
-                genders: {
+                /*genders: {
                   connect: { id: genders }
                 },
                 hair_colors: {
@@ -392,13 +443,13 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
                 },
                 skin_colors: {
                   connect: { id: skin_colors }
-                },
+                },*/
                 state: {
                   connect: { id: state }
                 },
-                civil_statuses: {
+                /*civil_statuses: {
                   connect: { id: civil_statuses }
-                },
+                },*/
           }
     });
 

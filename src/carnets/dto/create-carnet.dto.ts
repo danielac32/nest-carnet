@@ -36,20 +36,20 @@ export class CreateCarnetDto {
   @IsString()
   cedule?: string;
 
-  @ApiProperty()
+  /*@ApiProperty()
   @IsOptional()
   @IsString()
-  extent?: string;
+  extent?: string;*/
   
   @ApiProperty()
   @IsOptional()
   @IsString()
   address?: string;
   
-  @ApiProperty()
+  /*@ApiProperty()
   @IsOptional()
   @IsString()
-  phone?: string;
+  phone?: string;*/
   
   @ApiProperty()
   @IsOptional()
@@ -99,10 +99,12 @@ export class CreateCarnetDto {
   //@ValidateNested()
   //@Type(() => TextureDto)
   //textures?: TextureDto;
-  @ApiProperty()
+
+  /*@ApiProperty()
   @IsOptional()
   @IsNumber()
-  textures?: number;
+  textures?: number;*/
+
   //@IsOptional()
   //@ValidateNested()
   //@Type(() => StatusDto)
@@ -123,18 +125,20 @@ export class CreateCarnetDto {
   //@ValidateNested()
   //@Type(() => GenderDto)
   //genders?: GenderDto;
+  /*
   @ApiProperty()
   @IsOptional()
   @IsNumber()
-  genders?: number;
+  genders?: number;*/
   //@IsOptional()
   //@ValidateNested()
   //@Type(() => HairColorDto)
   //hair_colors?: HairColorDto;
+  /*
   @ApiProperty()
   @IsOptional()
   @IsNumber()
-  hair_colors?: number;
+  hair_colors?: number;*/
 
   //@IsOptional()
   //@ValidateNested()
@@ -160,19 +164,19 @@ export class CreateCarnetDto {
   //@ValidateNested()
   //@Type(() => SkinColorDto)
   //skin_colors?: SkinColorDto;
-  @ApiProperty()
+  /*@ApiProperty()
   @IsOptional()
   @IsNumber()
-  skin_colors?: number;
+  skin_colors?: number;*/
 
   //@IsOptional()
   //@ValidateNested()
   //@Type(() => CivilStatusDto)
  // civil_statuses?: CivilStatusDto;
-  @ApiProperty()
+  /*@ApiProperty()
   @IsOptional()
   @IsNumber()
-  civil_statuses?: number;
+  civil_statuses?: number;*/
   
   @ApiProperty()
   @IsDate()

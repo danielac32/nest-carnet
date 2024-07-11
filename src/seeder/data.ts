@@ -67,7 +67,7 @@ export const statuse:Statuse[]=[
 ]
 
 export const departments:Departments[]=[
-  { name: 'ADMINISTRACION' },
+  { name: 'GERENCIA DE ADMINISTRACION' },
   { name: 'AUDITORIA' },
   { name: 'CONSULTORÍA JURÍDICA' },
   { name: 'DELEGACIONES PRESIDENCIALES' },
