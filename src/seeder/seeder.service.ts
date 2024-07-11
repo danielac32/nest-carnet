@@ -2,6 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { CreateSeederDto } from './dto/create-seeder.dto';
 import { UpdateSeederDto } from './dto/update-seeder.dto';
 import { PrismaService } from '../db-connections/prisma.service';
+import * as fs from 'fs-extra';
+import * as path from 'path';
+
+import { join } from 'path';
+
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+
+
 
 import {levels,
         statuse,
@@ -55,8 +65,14 @@ export class SeederService {
     .finally(async () => {
       await this.prisma.$disconnect();
     });*/
-
     
+    const barcodePath = path.join(__dirname, '..','..', 'barcodes');
+    const qrPath = path.join(__dirname, '..','..', 'qr');
+    const uploadsPath = path.join(__dirname, '..','..', 'uploads');
+    await fs.emptyDir(barcodePath);
+    await fs.emptyDir(qrPath);
+    await fs.emptyDir(uploadsPath);
+
     for (const charge of charges) {
           await this.prisma.charge.create({
                data: charge

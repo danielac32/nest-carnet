@@ -14,7 +14,7 @@ import { extname } from 'path';
 import{ValidCharge} from '../shared/TypeCharge.interface'
 
 import * as QRCode from 'qrcode';
-import JsBarcode from 'jsbarcode';
+const JsBarcode = require('jsbarcode');
 
 
 
@@ -31,30 +31,38 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
 
   async generateBarcode(number: string, filename: string): Promise<string> {
     try {
-      const barcodePath = path.join(__dirname, '..', 'barcodes'); // Directorio para guardar los códigos de barras
+      const barcodePath = path.join(__dirname, '..','..', 'barcodes'); // Directorio para guardar los códigos de barras
       const barcodeFilePath = path.join(barcodePath, `${filename}.png`);
 
       // Crear un lienzo (canvas) para el código de barras con dimensiones específicas
       const canvas = createCanvas(400, 200); // Ancho y alto del lienzo en píxeles
-      await JsBarcode(canvas, number, { format: 'CODE39' });
-
+      await JsBarcode(canvas, number, { format: 'CODE128' });
+      // Asegúrate de que la carpeta de destino existe
+      await fs.ensureDir(barcodePath);
       // Guardar el lienzo como archivo PNG
       const out = fs.createWriteStream(barcodeFilePath);
       const stream = canvas.createPNGStream();
       stream.pipe(out);
-
+      // Esperar hasta que el archivo esté completamente escrito
+      await new Promise<void>((resolve, reject) => {
+        out.on('finish', resolve);
+        out.on('error', reject);
+      });
+      console.log("codigo de barra generado")
       return barcodeFilePath; // Devolver la ruta del archivo guardado
     } catch (error) {
       throw new Error(`Failed to generate barcode: ${error.message}`);
     }
   }
 
-  async generateQrCode(data: string,filename: string): Promise<string> {
+  async generateQrCode(data: string,cedule: string): Promise<string> {
     try {
       const qrCodePath = path.join(__dirname, '..','..', 'qr');
-      const qrCodeFilePath = path.join(qrCodePath, `${filename}.png`);
+      await fs.ensureDir(qrCodePath);
+      const qrCodeFilePath = path.join(qrCodePath, `${cedule}.png`);
       await QRCode.toFile(qrCodeFilePath, data);
-
+     // this.makeCarnet2(`${cedule}.png`,cedule);
+      console.log("codigo qr generado")
       return qrCodeFilePath; // Devolver la ruta del archivo guardado
     } catch (error) {
       throw new Error(`Failed to generate QR code: ${error.message}`);
@@ -64,7 +72,17 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
 
 
   getFilePath(filename: string): string {
-    const filePath = path.join(__dirname, '..','..', 'uploads', filename);
+    const filePath = path.join(__dirname, '..','..', 'uploads',filename, filename);
+
+    if (!fs.existsSync(filePath)) {
+      throw new HttpException('File not found', HttpStatus.NOT_FOUND);
+    }
+
+    return filePath;
+  }
+
+  getFilePath2(filename: string): string {
+    const filePath = path.join(__dirname, '..','..', 'uploads',filename, filename+"-2");
 
     if (!fs.existsSync(filePath)) {
       throw new HttpException('File not found', HttpStatus.NOT_FOUND);
@@ -86,7 +104,11 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
       await fs.writeFile(filePath, file.buffer);
 
       console.log(`File saved with name: ${filename} for cedule: ${cedule}`);
-      this.makeCarnet(filename,cedule);
+
+      await this.generateBarcode("123456", filename);
+      await this.generateQrCode("daniel quintero",filename);
+      await this.makeCarnet(filename,cedule);
+      await this.makeCarnet2(filename,cedule);
       //await fs.emptyDir(this.uploadPath);
       return { message: 'File uploaded successfully', filename, cedule };
     } catch (error) {
@@ -124,6 +146,68 @@ formatCedula(cedula: string) {
   return "V-"+num.toLocaleString('de-DE');
 
 }
+
+
+async makeCarnet2(file: string, cedule: string) {
+  const fondo: string = 'atras.jpg';
+  const canvasWidth = 918; // Ancho del lienzo
+  const canvasHeight = 1446; // Alto del lienzo
+  const canvas = createCanvas(canvasWidth, canvasHeight);
+  const ctx = canvas.getContext('2d');
+
+  console.log("makeCarnet2: ",file)
+  // Cargar la imagen de fondo del carnet
+  const imagePath = path.join(__dirname, '..', '..', 'image', fondo);
+  const carnetImage = await loadImage(imagePath);
+  ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);
+
+  // Cargar la imagen QR
+  const qrImagePath = path.join(__dirname, '..', '..', 'qr', file+".png");
+  const qrImage = await loadImage(qrImagePath);
+
+  // Cargar la imagen del código de barras
+  const barcodeImagePath = path.join(__dirname, '..', '..', 'barcodes', file+".png");
+  const barcodeImage = await loadImage(barcodeImagePath);
+
+  // Dibujar la imagen QR con esquinas redondeadas
+  const qrWidth = 250;
+  const qrHeight = 250;
+  const qrX = ((canvasWidth - qrWidth) / 2)+150;
+  const qrY = ((canvasHeight - qrHeight) / 2) + 420;
+  const qrRadius = 60;
+
+  await this.drawRoundedImage(ctx, qrImage, qrX, qrY, qrWidth, qrHeight, qrRadius);
+
+  // Dibujar la imagen del código de barras
+  const barcodeWidth = 450;
+  const barcodeHeight = 150;
+  const barcodeX = ((canvasWidth - barcodeWidth) / 2)+220;
+  const barcodeY = canvasHeight - barcodeHeight - 15;
+
+  ctx.drawImage(barcodeImage, barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+
+  // Guardar la imagen resultante
+  //const outputFilePath = path.join(__dirname, '..', '..', 'uploads/'+cedule, file);
+  const outputDir = path.join(__dirname, '..', '..', 'uploads', cedule);
+  const outputFilePath = path.join(outputDir, file+"-2");
+  try {
+    await fs.ensureDir(outputDir);
+    const out = fs.createWriteStream(outputFilePath);
+    const stream = canvas.createJPEGStream({ quality: 0.8 });
+    stream.pipe(out);
+    await new Promise<void>((resolve, reject) => {
+      out.on('finish', resolve);
+      out.on('error', reject);
+    });
+    console.log(`Imagen guardada en ${outputFilePath}`);
+  } catch (error) {
+    console.error('Error al guardar la imagen:', error);
+    throw new Error('Error al guardar la imagen (qr,barcode)');
+  }
+
+  return { outputFilePath };
+}
+
 
 async makeCarnet(file:string,cedule: string){
     let nombre:string = "";
@@ -225,15 +309,19 @@ async makeCarnet(file:string,cedule: string){
 
 
     // Guardar la imagen resultante
-    const outputFilePath = path.join(__dirname, '..', '..', 'uploads', file);
+    //const outputFilePath = path.join(__dirname, '..', '..', 'uploads/'+cedule, file);
+    const outputDir = path.join(__dirname, '..', '..', 'uploads', cedule);
+    const outputFilePath = path.join(outputDir, `${file}`);
+    
     try {
+      await fs.ensureDir(outputDir);
       const out = fs.createWriteStream(outputFilePath);
       const stream = canvas.createJPEGStream({ quality: 200 });
       stream.pipe(out);
       out.on('finish', () => console.log(`Imagen guardada en ${outputFilePath}`));
     } catch (error) {
       console.error('Error al guardar la imagen:', error);
-      throw new Error('Error al guardar la imagen');
+      throw new Error('Error al guardar la imagen(foto)');
     }
 
     return { outputFilePath };
@@ -277,11 +365,9 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
     const ctx = canvas.getContext('2d');
 
     // Cargar la imagen de carnet
-<<<<<<< HEAD
+
     const imagePath = path.join(__dirname, '..', '..', 'image', 'frente-blanco.jpg');
-=======
-    const imagePath = path.join(__dirname, '..', '..', 'image', 'IMG_20240703_204005_719.jpg');
->>>>>>> 130316e064f2d0d798d3eef159315545d226640b
+
     const carnetImage = await loadImage(imagePath);
 
     ctx.drawImage(carnetImage, 0, 0, canvasWidth, canvasHeight);

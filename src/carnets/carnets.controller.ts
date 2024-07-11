@@ -45,6 +45,17 @@ export class CarnetsController {
    
   }
 
+  
+
+  @UseGuards(JwtAuthGuard)
+  @Get('files2/:cedule')
+  getFile2(@Param('cedule') cedule: string,@Res() res: Response) {
+ 
+      const filePath = this.carnetsService.getFilePath2(cedule);
+      res.download(filePath); // Envía el archivo para su descarga
+   
+  }
+
 
 
   @UseGuards(JwtAuthGuard)
