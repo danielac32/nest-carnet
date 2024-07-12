@@ -104,6 +104,17 @@ export class CarnetsController {
   create(@Body() createCarnetDto: CreateCarnetDto) {
     return this.carnetsService.create(createCarnetDto);
   }
+
+
+
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get')
+  get(@Query('status') status: number,@Query('limit') limit: string,@Query('page') page: string) {
+       return this.carnetsService.getCarnets(status,+limit,+page);
+  }
+
+
   //@UseGuards(JwtAuthGuard)
   @Get()
   findAll() {

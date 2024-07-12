@@ -28,6 +28,34 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
     ) {}
 
 
+  async getCarnets(status: number,limit: number,page: number){
+        const [total, carnets] = await Promise.all([
+                this.prisma.carnets.count({ where: { id_status:Number(status)}}),
+
+                this.prisma.carnets.findMany({
+                    where: { id_status:Number(status) },
+                    include: {
+                        department:true,
+                        charge:true,
+                        access_levels:true,
+                        state:true,
+                        status:true
+                    },
+                    skip: (page -1 )* limit,
+                    take: limit,
+                })
+            ]);
+
+            const lastPage = Math.ceil(total / limit);
+
+            return {
+                total,
+                lastPage,
+                page,
+                carnets,
+            };
+  }
+
 
   async generateBarcode(number: string, filename: string): Promise<string> {
     try {
