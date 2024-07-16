@@ -19,8 +19,22 @@ import * as bcrypt from 'bcrypt';
 
 
 export const charges:Charges[]=[
-  { name: 'GERENTE' },
-  { name: 'PRESIDENTE' },
+    { name: 'GERENTE'},
+    { name: 'PRESIDENTE'},
+    { name: 'VICEPRESIDENTE'},
+    { name: 'GERENTE GENERAL'},
+    { name: 'AUDITOR INTERNO'},
+    { name: 'CONSULTOR JURIDICO'},
+    { name: 'GERENTE DE AREA'},
+    { name: 'GERENTE DE LINEA'},
+    { name: 'COORDINADOR'},
+    { name: 'ANALISTA'},
+    { name: 'OBRERO'},
+    { name: 'PERSONAL MEDICO'},
+    { name: 'OFICIAL DE SEGURIDAD'},
+    { name: 'ESCOLTA'},
+    { name: 'SUPERVISOR DE SEGURIDAD'},
+    { name: 'OTRO'},
 ]
 
 

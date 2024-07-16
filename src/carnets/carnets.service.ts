@@ -146,7 +146,6 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
   }
 
 
-
   private async getProfile(id:string) {
     try{
         const carnet = await this.prisma.carnets.findFirst({
@@ -177,9 +176,68 @@ formatCedula(cedula: string) {
 
 
 async makeCarnet2(file: string, cedule: string) {
-  const fondo: string = 'atras.jpg';
+  let fondo: string = 'atras.jpg';
   const canvasWidth = 918; // Ancho del lienzo
   const canvasHeight = 1446; // Alto del lienzo
+  let cargo:string = "";
+
+
+  const person = await this.getProfile(cedule);
+  if(!person) throw new HttpException('No existe el perfil', 500);
+
+  cargo= person.charge.name;
+    
+    switch(cargo){
+      case ValidCharge.GERENTE:
+           fondo="CARNET-CIIP-VIP.2.jpg";
+      break;
+      case ValidCharge.PRESIDENTE:
+           fondo="CARNET-CIIP-VIP.2.jpg";
+      break;
+      case ValidCharge.VICEPRESIDENTE:
+           fondo="CARNET-CIIP-VIP.2.jpg";
+      break;
+      case ValidCharge.GERENTE_GENERAL:
+           fondo="CARNET-CIIP-VIP.2.jpg";
+      break;
+      case ValidCharge.AUDITOR_INTERNO:
+           fondo="CARNET-CIIP-VIP.2.jpg";
+      break;
+      case ValidCharge.JURIDICO:
+            fondo="CARNET-CIIP-VIP.2.jpg";
+      break;
+      case ValidCharge.GERENTE_DE_AREA:
+            fondo="CARNET-CIIP-NARANJA.jpg";
+      break;
+      case ValidCharge.GERENTE_DE_LINEA:
+            fondo="CARNET-CIIP-NARANJA.2.jpg";
+      break;
+      case ValidCharge.COORDINADOR:
+          fondo="CARNET-CIIP-NARANJA.2.jpg";
+      break;
+      case ValidCharge.PERSONAL_ADMINISTRATIVO:
+          fondo="CARNET-CIIP-VERDE.AD.2.jpg";
+      break;
+      case ValidCharge.OBRERO:
+          fondo="CARNET-CIIP-MORADO.2.jpg";
+      break;
+      case ValidCharge.PERSONAL_MEDICO:
+          fondo="CARNET-CIIP-ROJO.2.jpg";
+      break;
+      case ValidCharge.OFICIALES_DE_SEGURIDAD:
+          fondo="CARNET-CIIP-VERDE.2.jpg";
+      break;
+      case ValidCharge.ESCOLTA:
+            fondo="CARNET-CIIP-VERDE.1.jpg";
+      break;
+      case ValidCharge.SUPERVISOR_DE_SEGURIDAD:
+            fondo="CARNET-CIIP-VERDE.1.jpg";
+      break;
+      case ValidCharge.OTRO:
+         fondo="CARNET-CIIP-MORADO.1.jpg";
+      break;
+    }
+
   const canvas = createCanvas(canvasWidth, canvasHeight);
   const ctx = canvas.getContext('2d');
 
@@ -243,12 +301,10 @@ async makeCarnet(file:string,cedule: string){
     let departamento:string="";
     let cargo:string = "";
     let fondo:string='frente-blanco.jpg';
-
     
     const person = await this.getProfile(cedule);
     if(!person) throw new HttpException('No existe el perfil', 500);
     
-
     const updatedCarnet = await this.prisma.carnets.update({
         where: {
           id:person.id
@@ -258,15 +314,65 @@ async makeCarnet(file:string,cedule: string){
         }
     });
 
-
     nombre = person.name + " " + person.lastname;
     cedula = cedule;
     departamento = person.department.name;
     cargo= person.charge.name;
     
+    switch(cargo){
+      case ValidCharge.GERENTE:
+           fondo="CARNET-CIIP-VIP.1.jpg";
+      break;
+      case ValidCharge.PRESIDENTE:
+           fondo="CARNET-CIIP-VIP.1.jpg";
+      break;
+      case ValidCharge.VICEPRESIDENTE:
+           fondo="CARNET-CIIP-VIP.1.jpg";
+      break;
+      case ValidCharge.GERENTE_GENERAL:
+           fondo="CARNET-CIIP-VIP.1.jpg";
+      break;
+      case ValidCharge.AUDITOR_INTERNO:
+           fondo="CARNET-CIIP-VIP.1.jpg";
+      break;
+      case ValidCharge.JURIDICO:
+            fondo="CARNET-CIIP-VIP.1.jpg";
+      break;
+      case ValidCharge.GERENTE_DE_AREA:
+            fondo="CARNET-CIIP-NARANJA.jpg";
+      break;
+      case ValidCharge.GERENTE_DE_LINEA:
+            fondo="CARNET-CIIP-NARANJA.jpg";
+      break;
+      case ValidCharge.COORDINADOR:
+          fondo="CARNET-CIIP-NARANJA.jpg";
+      break;
+      case ValidCharge.PERSONAL_ADMINISTRATIVO:
+          fondo="CARNET-CIIP-VERDE.AD.1.jpg";
+      break;
+      case ValidCharge.OBRERO:
+          fondo="CARNET-CIIP-MORADO.1.jpg";
+      break;
+      case ValidCharge.PERSONAL_MEDICO:
+          fondo="CARNET-CIIP-ROJO.1.jpg";
+      break;
+      case ValidCharge.OFICIALES_DE_SEGURIDAD:
+          fondo="CARNET-CIIP-VERDE.1.jpg";
+      break;
+      case ValidCharge.ESCOLTA:
+            fondo="CARNET-CIIP-VERDE.1.jpg";
+      break;
+      case ValidCharge.SUPERVISOR_DE_SEGURIDAD:
+            fondo="CARNET-CIIP-VERDE.1.jpg";
+      break;
+      case ValidCharge.OTRO:
+         fondo="CARNET-CIIP-MORADO.1.jpg";
+      break;
+    }
+    /*
     if(cargo === ValidCharge.GERENTE){
        fondo = 'frente-dorado.jpg';
-    }
+    }*/
 
     const canvasWidth = 1080;//319*2; // Ancho del lienzo
     const canvasHeight = 1701;//502*2; // Alto del lienzo
@@ -394,7 +500,7 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
 
     // Cargar la imagen de carnet
 
-    const imagePath = path.join(__dirname, '..', '..', 'image', 'frente-blanco.jpg');
+    const imagePath = path.join(__dirname, '..', '..', 'image', 'CARNET-CIIP-NARANJA.jpg');
 
     const carnetImage = await loadImage(imagePath);
 
