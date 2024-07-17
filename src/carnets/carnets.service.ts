@@ -175,6 +175,30 @@ formatCedula(cedula: string) {
 }
 
 
+ wrapText(context: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+    const words = text.split(' ');
+    let line = '';
+    const lines = [];
+
+    for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + ' ';
+        let metrics = context.measureText(testLine);
+        let testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+            lines.push(line);
+            line = words[n] + ' ';
+        } else {
+            line = testLine;
+        }
+    }
+    lines.push(line);
+
+    for (let i = 0; i < lines.length; i++) {
+        context.fillText(lines[i].trim(), x, y + i * lineHeight);
+    }
+}
+
+
 async makeCarnet2(file: string, cedule: string) {
   let fondo: string = 'atras.jpg';
   const canvasWidth = 918; // Ancho del lienzo
@@ -228,13 +252,13 @@ async makeCarnet2(file: string, cedule: string) {
           fondo="CARNET-CIIP-VERDE.2.jpg";
       break;
       case ValidCharge.ESCOLTA:
-            fondo="CARNET-CIIP-VERDE.1.jpg";
+            fondo="CARNET-CIIP-VERDE.2.jpg";
       break;
       case ValidCharge.SUPERVISOR_DE_SEGURIDAD:
-            fondo="CARNET-CIIP-VERDE.1.jpg";
+            fondo="CARNET-CIIP-VERDE.2.jpg";
       break;
       case ValidCharge.OTRO:
-         fondo="CARNET-CIIP-MORADO.1.jpg";
+         fondo="CARNET-CIIP-MORADO.2.jpg";
       break;
     }
 
@@ -403,7 +427,7 @@ async makeCarnet(file:string,cedule: string){
     const yy = (canvasHeight - overlayHeight) / 2;
     const radius = 60; // Ajusta el radio de las esquinas redondeadas
 
-   await this.drawRoundedImage(ctx, overlayImage, xx-3, yy-191, overlayWidth, overlayHeight, radius);
+    await this.drawRoundedImage(ctx, overlayImage, xx-3, yy-191, overlayWidth, overlayHeight, radius);
     // Superponer la imagen en el centro del lienzo
     //ctx.drawImage(overlayImage, overlayX-91, overlayY-70,overlayWidth, overlayHeight);
      
@@ -430,7 +454,30 @@ async makeCarnet(file:string,cedule: string){
     x=departamento.length;
     medio= canvasWidth /2;
     pos=(canvasWidth -x)/2
-    ctx.fillText(departamento.toUpperCase(), pos, (canvasHeight/2)+390);  
+    //ctx.fillText(departamento.toUpperCase(), pos, (canvasHeight/2)+390);  
+    
+    const lineHeight = 60; // Ajusta según sea necesario
+
+    const words = departamento.split(' ');
+    let line = '';
+    const lines = [];
+
+    for (let n = 0; n < words.length; n++) {
+      let testLine = line + words[n] + ' ';
+      let metrics = ctx.measureText(testLine);
+      let testWidth = metrics.width;
+      if (testWidth > (canvasWidth-30) && n > 0) {
+        lines.push(line);
+        line = words[n] + ' ';
+      } else {
+        line = testLine;
+      }
+    }
+    lines.push(line);
+
+    for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i].trim(), pos, ((canvasHeight/2)+390) + i * lineHeight);
+    }
 
 
     ctx.font = 'bold 75px arial'; // Definir el tamaño y la fuente del texto
