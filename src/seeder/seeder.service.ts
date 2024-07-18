@@ -69,10 +69,12 @@ export class SeederService {
     const barcodePath = path.join(__dirname, '..','..', 'barcodes');
     const qrPath = path.join(__dirname, '..','..', 'qr');
     const uploadsPath = path.join(__dirname, '..','..', 'uploads');
+    const foto = path.join(__dirname, '..','..', 'tmp');
     await fs.emptyDir(barcodePath);
     await fs.emptyDir(qrPath);
     await fs.emptyDir(uploadsPath);
-
+    await fs.emptyDir(foto);
+    
     for (const charge of charges) {
           await this.prisma.charge.create({
                data: charge

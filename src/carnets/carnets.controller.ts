@@ -120,10 +120,11 @@ export class CarnetsController {
   findAll() {
     return this.carnetsService.findAll();
   }
+
   @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.carnetsService.findOne(id);
+  @Get(':cedule')
+  findOne(@Param('cedule') cedule: string) {
+    return this.carnetsService.findOne(cedule);
   }
   @UseGuards(JwtAuthGuard)
   @Patch(':id')

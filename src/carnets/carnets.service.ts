@@ -15,13 +15,13 @@ import{ValidCharge} from '../shared/TypeCharge.interface'
 
 import * as QRCode from 'qrcode';
 const JsBarcode = require('jsbarcode');
-
+import * as CryptoJS from 'crypto-js';
 
 
 @Injectable()
 export class CarnetsService {
 private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
-
+qrurl:string = "http://carnet.ciip.com.ve/ficha"
 
   constructor(
     private prisma: PrismaService,
@@ -132,9 +132,12 @@ private readonly uploadPath = join(__dirname, '..', '..', 'tmp');
       await fs.writeFile(filePath, file.buffer);
 
       console.log(`File saved with name: ${filename} for cedule: ${cedule}`);
+      
 
-      await this.generateBarcode("123456", filename);
-      await this.generateQrCode("daniel quintero",filename);
+      const person = await this.getProfile(cedule);
+      if(!person) throw new HttpException('No existe el perfil', 500);
+      await this.generateBarcode(person.card_code, filename);
+      await this.generateQrCode(this.qrurl,filename);
       await this.makeCarnet(filename,cedule);
       await this.makeCarnet2(filename,cedule);
       //await fs.emptyDir(this.uploadPath);
@@ -746,7 +749,14 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
         const carnet = await this.prisma.carnets.findFirst({
             where: {
                     cedule: id
-            }
+            },
+            include: {
+                        department:true,
+                        charge:true,
+                        access_levels:true,
+                        state:true,
+                        status:true
+                    },
         });
         return carnet;
     } catch (error) {
@@ -762,21 +772,123 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
       }
   }
 
-  async update(id: string, updateCarnetDto: UpdateCarnetDto) {
-    /*const carnet= await this.getCarnet(id);
-    if(!carnet)throw new NotFoundException(`Entity with ID ${id} not found`);
+  encryptString(value: string, key: string): string {
+    return CryptoJS.AES.encrypt(value, key).toString();
+  }
 
+  decryptString(encryptedValue: string, key: string): string {
+    const bytes = CryptoJS.AES.decrypt(encryptedValue, key);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  }
+
+
+
+ 
+
+  async update(id: string,updateCarnetDto: UpdateCarnetDto) {
+     const carnet= await this.getCarnet(id);
+    if(!carnet)throw new NotFoundException(`Entity with ID ${id} not found`);
+    
+    console.log(updateCarnetDto)
+    const {type_creations,...data}= updateCarnetDto;
+
+    const barcodePath = path.join(__dirname, '..','..', 'barcodes',id+".png");
+    const qrCodePath = path.join(__dirname, '..','..', 'qr',id+".png");
+    const uploadPath = path.join(__dirname, '..', '..', 'tmp',id);
+    const filePath = path.join(__dirname, '..','..', 'uploads',id);
+
+
+    const { name,
+            lastname,
+            card_code,
+            expiration,
+            note,
+            cedule,
+            address,
+            cellpone,
+            photo,
+            qr,
+            municipalities,
+            parishes,
+            department,
+            charge,
+            status,
+            access_levels,
+            state
+        }= data
+
+   
     const updatedCarnet = await this.prisma.carnets.update({
         where: {
           id: carnet.id
         },
         data:{
-          ...updateCarnetDto
+          name: name,
+          lastname: lastname,
+          expiration: expiration,
+          note: note,
+          cedule: cedule,
+          address: address,
+          cellpone: cellpone,
+          card_code: card_code,
+          department: { connect: { id: department as number } },
+          charge: { connect: { id: charge as number } },
+          type_creations: { connect: { id: 2 } },
+          status: { connect: { id: status as number } },
+          access_levels: { connect: { id: access_levels as number } },
+          state: { connect: { id: state as number } },
+          municipalities: municipalities,
+          parishes: parishes,
+          updated_at: new Date()
         }
     });
-    return {updatedCarnet};*/
-    return ""
+
+    await this.deleteFile(barcodePath);
+    await this.deleteFile(qrCodePath);
+    await this.deleteDir(filePath);
+      
+    if(type_creations==100){ //elimina la foto que ya esta guardada
+      console.log("usar nueva foto")
+      await this.deleteFile(uploadPath);
+    }else{// usa la foto  que ya esta guardada 
+      console.log("usar vieja foto")
+      const person = await this.getProfile(cedule);
+      if(!person) throw new HttpException('No existe el perfil', 500);
+      await this.generateBarcode(person.card_code, cedule);
+      await this.generateQrCode(this.qrurl+"?id="+this.encryptString(cedule,"12345"),cedule);
+      await this.makeCarnet(cedule,cedule);
+      await this.makeCarnet2(cedule,cedule);
+      //await fs.emptyDir(this.uploadPath);
+    }
+    return {
+        res:"ok"
+    };
   }
+
+
+
+  async deleteFile(filePath: string): Promise<void> {
+    try {
+      await fs.unlink(filePath);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        throw new NotFoundException(`File ${filePath} not found`);
+      }
+      throw error;
+    }
+  }
+  async deleteDir(directoryPath: string): Promise<void> {
+    try {
+      await fs.rm(directoryPath, { recursive: true, force: true });
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        throw new NotFoundException(`Directory ${directoryPath} not found`);
+      }
+      throw error;
+    }
+  }
+  
+
 
   async remove(id: string) {
     const carnet= await this.getCarnet(id);
@@ -787,6 +899,17 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
         id: carnet.id
       },
     });
+
+    const barcodePath = path.join(__dirname, '..','..', 'barcodes',id+".png");
+    const qrCodePath = path.join(__dirname, '..','..', 'qr',id+".png");
+    const uploadPath = path.join(__dirname, '..', '..', 'tmp',id);
+    const filePath = path.join(__dirname, '..','..', 'uploads',id);
+
+
+    await this.deleteFile(barcodePath);
+    await this.deleteFile(qrCodePath);
+    await this.deleteFile(uploadPath);
+    await this.deleteDir(filePath);
     return {deletedCarnet}
   }
 }
