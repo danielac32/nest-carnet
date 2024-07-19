@@ -25,6 +25,7 @@ export const charges:Charges[]=[
     { name: 'GERENTE GENERAL'},
     { name: 'AUDITOR INTERNO'},
     { name: 'CONSULTOR JURIDICO'},
+    { name: 'CONSULTORA JURIDICA'},
     { name: 'GERENTE DE AREA'},
     { name: 'GERENTE DE LINEA'},
     { name: 'COORDINADOR'},

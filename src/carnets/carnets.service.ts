@@ -119,6 +119,45 @@ qrurl:string = "http://carnet.ciip.com.ve/ficha"
     return filePath;
   }
 
+ encryptNumericString(text: string): string {
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+
+  for (let i = 0; i < text.length; i++) {
+    let char = text.charAt(i);
+    let index = parseInt(char, 10);
+
+    // Ensure we have a valid index
+    if (!isNaN(index) && index >= 0 && index <= 9) {
+      result += characters[index];
+    } else {
+      result += char; // Handle non-numeric characters
+    }
+  }
+
+  return result;
+}
+
+
+ decryptNumericString(text: string): string {
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+
+  for (let i = 0; i < text.length; i++) {
+    let char = text.charAt(i);
+    let index = characters.indexOf(char);
+
+    // Ensure we have a valid character
+    if (index >= 0 && index <= 9) {
+      result += index.toString();
+    } else {
+      result += char; // Handle non-encrypted characters
+    }
+  }
+
+  return result;
+}
+
 
   async fileUpload(file: Express.Multer.File, cedule: string) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -132,18 +171,18 @@ qrurl:string = "http://carnet.ciip.com.ve/ficha"
       await fs.writeFile(filePath, file.buffer);
 
       console.log(`File saved with name: ${filename} for cedule: ${cedule}`);
-      
 
       const person = await this.getProfile(cedule);
       if(!person) throw new HttpException('No existe el perfil', 500);
       await this.generateBarcode(person.card_code, filename);
-      await this.generateQrCode(this.qrurl,filename);
+      await this.generateQrCode(this.qrurl+"?id="+this.encryptNumericString(cedule),filename);
       await this.makeCarnet(filename,cedule);
       await this.makeCarnet2(filename,cedule);
       //await fs.emptyDir(this.uploadPath);
       return { message: 'File uploaded successfully', filename, cedule };
     } catch (error) {
       console.error('Error saving file:', error);
+      await this.remove(cedule);
       throw new HttpException('Error saving file', 500);//throw new Error('File upload failed');
     }
   }
@@ -203,7 +242,7 @@ formatCedula(cedula: string) {
 
 
 async makeCarnet2(file: string, cedule: string) {
-  let fondo: string = 'atras.jpg';
+  let fondo: string = 'CARNET-CIIP-MORADO.2.jpg';
   const canvasWidth = 918; // Ancho del lienzo
   const canvasHeight = 1446; // Alto del lienzo
   let cargo:string = "";
@@ -230,6 +269,7 @@ async makeCarnet2(file: string, cedule: string) {
       case ValidCharge.AUDITOR_INTERNO:
            fondo="CARNET-CIIP-VIP.2.jpg";
       break;
+      case ValidCharge.JURIDICA:
       case ValidCharge.JURIDICO:
             fondo="CARNET-CIIP-VIP.2.jpg";
       break;
@@ -285,7 +325,7 @@ async makeCarnet2(file: string, cedule: string) {
   // Dibujar la imagen QR con esquinas redondeadas
   const qrWidth = 250;
   const qrHeight = 250;
-  const qrX = ((canvasWidth - qrWidth) / 2)+150;
+  const qrX = ((canvasWidth - qrWidth) / 2)+220;
   const qrY = ((canvasHeight - qrHeight) / 2) + 420;
   const qrRadius = 60;
 
@@ -327,7 +367,7 @@ async makeCarnet(file:string,cedule: string){
     let cedula:string = "";
     let departamento:string="";
     let cargo:string = "";
-    let fondo:string='frente-blanco.jpg';
+    let fondo:string='CARNET-CIIP-MORADO.1.jpg';
     
     const person = await this.getProfile(cedule);
     if(!person) throw new HttpException('No existe el perfil', 500);
@@ -362,6 +402,7 @@ async makeCarnet(file:string,cedule: string){
       case ValidCharge.AUDITOR_INTERNO:
            fondo="CARNET-CIIP-VIP.1.jpg";
       break;
+      case ValidCharge.JURIDICA:
       case ValidCharge.JURIDICO:
             fondo="CARNET-CIIP-VIP.1.jpg";
       break;
@@ -443,7 +484,7 @@ async makeCarnet(file:string,cedule: string){
     ctx.fillText(nombre.toUpperCase(), pos, (canvasHeight/2)+200);  
     
     ctx.font = '50px arial'; // Definir el tamaño y la fuente del texto
-    ctx.fillStyle = '#9B9B9B'; // Color del texto (blanco en este caso)
+    ctx.fillStyle = '#000010'; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
     x=cedula.length;
     medio= canvasWidth /2;
@@ -452,7 +493,7 @@ async makeCarnet(file:string,cedule: string){
     
 
     ctx.font = '50px arial'; // Definir el tamaño y la fuente del texto
-    ctx.fillStyle = '#9B9B9B'; // Color del texto (blanco en este caso)
+    ctx.fillStyle = '#000010'; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
     x=departamento.length;
     medio= canvasWidth /2;
@@ -483,7 +524,7 @@ async makeCarnet(file:string,cedule: string){
     }
 
 
-    ctx.font = 'bold 75px arial'; // Definir el tamaño y la fuente del texto
+    ctx.font = 'bold 65px arial'; // Definir el tamaño y la fuente del texto
     ctx.fillStyle = '#000000'; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
     x=cargo.length;
@@ -771,6 +812,7 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
           carnet
       }
   }
+  
 
   encryptString(value: string, key: string): string {
     return CryptoJS.AES.encrypt(value, key).toString();
@@ -850,12 +892,13 @@ async drawRoundedImage(ctx, img, x, y, width, height, radius) {
     if(type_creations==100){ //elimina la foto que ya esta guardada
       console.log("usar nueva foto")
       await this.deleteFile(uploadPath);
+      
     }else{// usa la foto  que ya esta guardada 
       console.log("usar vieja foto")
       const person = await this.getProfile(cedule);
       if(!person) throw new HttpException('No existe el perfil', 500);
       await this.generateBarcode(person.card_code, cedule);
-      await this.generateQrCode(this.qrurl+"?id="+this.encryptString(cedule,"12345"),cedule);
+      await this.generateQrCode(this.qrurl+"?id="+this.encryptNumericString(cedule),cedule);
       await this.makeCarnet(cedule,cedule);
       await this.makeCarnet2(cedule,cedule);
       //await fs.emptyDir(this.uploadPath);

@@ -126,6 +126,15 @@ export class CarnetsController {
   findOne(@Param('cedule') cedule: string) {
     return this.carnetsService.findOne(cedule);
   }
+
+
+
+  @Get('get2/:cedule')
+  findOne2(@Param('cedule') cedule: string) {
+    return this.carnetsService.findOne(cedule);
+  }
+
+
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCarnetDto: UpdateCarnetDto) {
