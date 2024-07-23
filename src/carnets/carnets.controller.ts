@@ -10,11 +10,13 @@ import { extname } from 'path';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
+import {CarnetsUtils} from './carnets.utils'
+
 
 @ApiBearerAuth()
 @Controller('carnets')
 export class CarnetsController {
-  constructor(private readonly carnetsService: CarnetsService) {}
+  constructor(private readonly carnetsService: CarnetsService,private utils: CarnetsUtils,) {}
   
   
 
@@ -23,7 +25,7 @@ export class CarnetsController {
     if (!number || !filename) {
       throw new Error('Number and filename are required');
     }
-    return this.carnetsService.generateBarcode(number, filename);
+    return this.utils.generateBarcode(number, filename);
   }
 
   @Get('qr')
@@ -31,7 +33,7 @@ export class CarnetsController {
     if (!data) {
       throw new Error('Data is required');
     }
-    return this.carnetsService.generateQrCode(data,filename);
+    return this.utils.generateQrCode(data,filename);
   }
 
 
@@ -65,16 +67,23 @@ export class CarnetsController {
     return this.carnetsService.fileUpload(file,cedule);
   }
 
+  
 
-  @Get('make')
+  @Post('test/:id')
+  test(@Param('id') id: string) {
+    return this.utils.encryptNumericString(id);
+  }
+
+  
+  /*@Get('make')
   carnet() {
     return this.carnetsService.make();
   }
   
   @Post('test/:id')
   test(@Param('id') id: string) {
-    return this.carnetsService.formatCedula(id);
-  }
+    return this.utils.formatCedula(id);
+  }*/
 
 /*
   @UseGuards(JwtAuthGuard)

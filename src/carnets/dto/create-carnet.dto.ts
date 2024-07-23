@@ -56,7 +56,7 @@ export class CreateCarnetDto {
   @IsString()
   cellpone?: string;
   
-  @ApiProperty()
+  /*@ApiProperty()
   @IsOptional()
   @IsString()
   photo?: string;
@@ -64,7 +64,7 @@ export class CreateCarnetDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  qr?: string;
+  qr?: string;*/
 
   //@IsOptional()
   //@ValidateNested()
@@ -150,7 +150,7 @@ export class CreateCarnetDto {
   state?: number;
 
   
-  @ApiProperty()
+  /*@ApiProperty()
   @IsOptional()
   @IsString()
   municipalities?: string;
@@ -158,7 +158,7 @@ export class CreateCarnetDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  parishes?: string;
+  parishes?: string;*/
 
   //@IsOptional()
   //@ValidateNested()

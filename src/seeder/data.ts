@@ -21,6 +21,13 @@ import * as bcrypt from 'bcrypt';
 export const charges:Charges[]=[
     { name: 'GERENTE'},
     { name: 'PRESIDENTE'},
+    { name: 'ASISTENTE ADMINISTRATIVO'},
+    { name: 'TECNICO'},
+    { name: 'ASISTENTE EJECUTIVO'},
+    { name: 'CHOFER'},
+    { name: 'SUPERVISOR AUXILIAR'},
+    { name: 'CHEF'},
+    { name: 'COCINERO'},
     { name: 'VICEPRESIDENTE'},
     { name: 'GERENTE GENERAL'},
     { name: 'AUDITOR INTERNO'},
@@ -35,7 +42,6 @@ export const charges:Charges[]=[
     { name: 'OFICIAL DE SEGURIDAD'},
     { name: 'ESCOLTA'},
     { name: 'SUPERVISOR DE SEGURIDAD'},
-    { name: 'OTRO'},
 ]
 
 
@@ -94,7 +100,7 @@ export const departments:Departments[]=[
   { name: 'Gerencia de Asesoría Legal y Dictámenes' },
   { name: 'Gerencia de Contrataciones' },
   { name: 'Gerencia de Litigios' },
-  { name: 'GerenciaGeneral de Planificación y Presupuesto' },
+  { name: 'Gerencia General de Planificación y Presupuesto' },
   { name: 'Gerencia General de Tecnología de la Información y Comunicación' },
   { name: 'Gerencia de Planificación y  Estudios Económicos' },
   { name: 'Gerencia de Gestión Organizacional y Procesos' },

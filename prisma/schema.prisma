@@ -147,12 +147,12 @@ model Carnets {
     expiration DateTime
     note String?
     cedule String?
-    extent String?
+    //extent String?
     address String?
-    phone String?
+    //phone String?
     cellpone String?
-    photo String?
-    qr String?
+    //photo String?
+    //qr String?
 
     department    Department? @relation(fields: [id_department], references: [id])
     id_department  Int?
@@ -186,8 +186,8 @@ model Carnets {
     state    State? @relation(fields: [id_state], references: [id])
     id_state  Int?
     
-    municipalities String?
-    parishes String?
+    //municipalities String?
+    //parishes String?
     
     //skin_colors    Skin_colors? @relation(fields: [id_skin_colors], references: [id])
     //id_skin_colors  Int?
