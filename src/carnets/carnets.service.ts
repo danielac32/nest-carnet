@@ -407,16 +407,16 @@ async makeCarnet(file:string,cedule: string){
     // Superponer la imagen en el centro del lienzo
     //ctx.drawImage(overlayImage, overlayX-91, overlayY-70,overlayWidth, overlayHeight);
      
-    ctx.font = 'bold 65px arial'; // Definir el tamaño y la fuente del texto
-    ctx.fillStyle = '#000000'; // Color del texto (blanco en este caso)
+    ctx.font = process.env.nfont; // Definir el tamaño y la fuente del texto
+    ctx.fillStyle = process.env.ncolor; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
     let x:number=nombre.length;
     let medio:number = canvasWidth /2;
     let pos:number=(canvasWidth -x)/2
     ctx.fillText(nombre.toUpperCase(), pos, (canvasHeight/2)+200);  
     
-    ctx.font = '50px arial'; // Definir el tamaño y la fuente del texto
-    ctx.fillStyle = '#000010'; // Color del texto (blanco en este caso)
+    ctx.font = process.env.ccolor; // Definir el tamaño y la fuente del texto
+    ctx.fillStyle = process.env.ccolor; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
     x=cedula.length;
     medio= canvasWidth /2;
@@ -424,8 +424,8 @@ async makeCarnet(file:string,cedule: string){
     ctx.fillText(this.utils.formatCedula(cedula), pos, (canvasHeight/2)+280);  
     
 
-    ctx.font = '50px arial'; // Definir el tamaño y la fuente del texto
-    ctx.fillStyle = '#000010'; // Color del texto (blanco en este caso)
+    ctx.font = process.env.dcolor; // Definir el tamaño y la fuente del texto
+    ctx.fillStyle = process.env.dcolor; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
     x=departamento.length;
     medio= canvasWidth /2;
@@ -456,8 +456,8 @@ async makeCarnet(file:string,cedule: string){
     }
 
 
-    ctx.font = 'bold 65px arial'; // Definir el tamaño y la fuente del texto
-    ctx.fillStyle = '#000000'; // Color del texto (blanco en este caso)
+    ctx.font = process.env.cafont; // Definir el tamaño y la fuente del texto
+    ctx.fillStyle = process.env.cacolor; // Color del texto (blanco en este caso)
     ctx.textAlign = 'center'; // Alinear el texto al centro
     x=cargo.length;
     medio= canvasWidth /2;

@@ -9,3 +9,22 @@ JWT_KEY=miclave
 
 #DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
 DATABASE_URL="file:./dev.db"
+
+
+#carnet font
+#nombre 
+nfont = 'bold 65px arial'
+ncolor = '#000000'
+
+#cedula
+cfont = '50px arial''
+ccolor = '#000010'
+
+#departamento
+dfont = '50px arial'
+dcolor = '#000010'
+
+
+#cargo
+cafont = 'bold 65px arial'
+cacolor = '#000000'

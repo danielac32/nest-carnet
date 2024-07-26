@@ -62,7 +62,7 @@ async generateBarcode(number: string, filename: string): Promise<string> {
   
 
   getImageBack(cargo:string):string{
-      let fonfo:string="CARNET-CIIP-MORADO.2.jpg";
+      let fondo:string="CARNET-CIIP-MORADO.2.jpg";
       switch(cargo){
           case ValidCharge.GERENTE:
           case ValidCharge.GERENTE_DE_AREA:
@@ -108,7 +108,7 @@ async generateBarcode(number: string, filename: string): Promise<string> {
 
 
   getImageFront(cargo:string):string{
-        let fonfo:string="CARNET-CIIP-MORADO.2.jpg";
+        let fondo:string="CARNET-CIIP-MORADO.2.jpg";
         switch(cargo){
           case ValidCharge.GERENTE:
           case ValidCharge.GERENTE_DE_AREA:
