@@ -64,6 +64,12 @@ async generateBarcode(number: string, filename: string): Promise<string> {
   getImageBack(cargo:string):string{
       let fondo:string="CARNET-CIIP-MORADO.2.jpg";
       switch(cargo){
+          case ValidCharge.ASESOR:
+                fondo="ASESOR_NUEVO.2.jpg";
+          break;
+          case ValidCharge.VISITANTE:
+                fondo="INVITADO_NUEVO.2.jpg";
+          break;
           case ValidCharge.GERENTE:
           case ValidCharge.GERENTE_DE_AREA:
           case ValidCharge.GERENTE_DE_LINEA:
@@ -89,14 +95,19 @@ async generateBarcode(number: string, filename: string): Promise<string> {
           case ValidCharge.COCINERO:
               fondo="CARNET-CIIP-VERDE.2.jpg";
           break;
-          case ValidCharge.PERSONAL_ADMINISTRATIVO:
+          case ValidCharge.PROFESIONAL:
               fondo="CARNET-CIIP-VERDE.AD.2.jpg";
           break;
           case ValidCharge.OBRERO:
           case ValidCharge.SUPERVISOR_AUXILIAR:
+    case ValidCharge.AUXILIAR_DE_SERVICIO:
               fondo="CARNET-CIIP-MORADO.2.jpg";
           break;
           case ValidCharge.PERSONAL_MEDICO:
+    case ValidCharge.ENFERMERA:
+    case ValidCharge.ENFERMERO:
+    case ValidCharge.MEDICO:
+    case ValidCharge.JEFE_DE_SERVICIO:
               fondo="CARNET-CIIP-ROJO.2.jpg";
           break;
           default:
@@ -110,6 +121,12 @@ async generateBarcode(number: string, filename: string): Promise<string> {
   getImageFront(cargo:string):string{
         let fondo:string="CARNET-CIIP-MORADO.2.jpg";
         switch(cargo){
+          case ValidCharge.ASESOR:
+                fondo="ASESOR_NUEVO.jpg";
+          break;
+          case ValidCharge.VISITANTE:
+                fondo="INVITADO_NUEVO.1.jpg";
+          break;
           case ValidCharge.GERENTE:
           case ValidCharge.GERENTE_DE_AREA:
           case ValidCharge.GERENTE_DE_LINEA:
@@ -135,14 +152,19 @@ async generateBarcode(number: string, filename: string): Promise<string> {
           case ValidCharge.COCINERO:
               fondo="CARNET-CIIP-VERDE.1.jpg";
           break;
-          case ValidCharge.PERSONAL_ADMINISTRATIVO:
+          case ValidCharge.PROFESIONAL:
               fondo="CARNET-CIIP-VERDE.AD.1.jpg";
           break;
           case ValidCharge.OBRERO:
           case ValidCharge.SUPERVISOR_AUXILIAR:
+    case ValidCharge.AUXILIAR_DE_SERVICIO:
               fondo="CARNET-CIIP-MORADO.1.jpg";
           break;
           case ValidCharge.PERSONAL_MEDICO:
+          case ValidCharge.ENFERMERA:
+          case ValidCharge.ENFERMERO:
+          case ValidCharge.MEDICO:
+          case ValidCharge.JEFE_DE_SERVICIO:
               fondo="CARNET-CIIP-ROJO.1.jpg";
           break;
           default:
@@ -173,6 +195,23 @@ encryptNumericString(text: string): string {
   }
 
   return result;
+  /*
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+
+  for (let i = 0; i < text.length; i++) {
+    let char = text.charAt(i);
+    let index = parseInt(char, 10);
+
+    // Ensure we have a valid index
+    if (!isNaN(index) && index >= 0 && index <= 9) {
+      result += characters[index];
+    } else {
+      result += char; // Handle non-numeric characters
+    }
+  }
+
+  return result;*/
 }
 
 
@@ -199,6 +238,23 @@ encryptNumericString(text: string): string {
   }
 
   return result;
+  /*
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+
+  for (let i = 0; i < text.length; i++) {
+    let char = text.charAt(i);
+    let index = characters.indexOf(char);
+
+    // Ensure we have a valid character
+    if (index >= 0 && index <= 9) {
+      result += index.toString();
+    } else {
+      result += char; // Handle non-encrypted characters
+    }
+  }
+
+  return result;*/
 }
 
 formatCedula(cedula: string) {
@@ -238,7 +294,7 @@ formatCedula(cedula: string) {
 
   
 async removeById(id: string){
-	const barcodePath = path.join(__dirname, '..','..', 'barcodes',id+".png");
+  const barcodePath = path.join(__dirname, '..','..', 'barcodes',id+".png");
     const qrCodePath = path.join(__dirname, '..','..', 'qr',id+".png");
     const uploadPath = path.join(__dirname, '..', '..', 'tmp',id);
     const filePath = path.join(__dirname, '..','..', 'uploads',id);

@@ -20,6 +20,7 @@ import * as bcrypt from 'bcrypt';
 
 export const charges:Charges[]=[
     { name: 'GERENTE'},
+    { name: 'MESONERO'},
     { name: 'PRESIDENTE'},
     { name: 'ASISTENTE ADMINISTRATIVO'},
     { name: 'TECNICO'},
@@ -36,12 +37,19 @@ export const charges:Charges[]=[
     { name: 'GERENTE DE AREA'},
     { name: 'GERENTE DE LINEA'},
     { name: 'COORDINADOR'},
-    { name: 'ANALISTA'},
+    { name: 'PROFESIONAL'},
     { name: 'OBRERO'},
     { name: 'PERSONAL MEDICO'},
     { name: 'OFICIAL DE SEGURIDAD'},
     { name: 'ESCOLTA'},
     { name: 'SUPERVISOR DE SEGURIDAD'},
+    { name: 'AUXILIAR DE SERVICIO'},
+    { name: 'ENFERMERA'},
+    { name: 'ENFERMERO'},
+    { name: 'MEDICO'},
+    { name: 'JEFE DE SERVICIO'},
+    { name: 'ASESOR'},
+    { name: 'VISITANTE'},
 ]
 
 
@@ -74,7 +82,8 @@ export const levels:Levels[]=[
   { name: 'Piso 6' },
   { name: 'Piso 7' },
   { name: 'Piso 8' },
-  { name: 'Piso 9' }
+  { name: 'Piso 9' },
+  { name: ''}
 ]
 
 
@@ -97,7 +106,7 @@ export const departments:Departments[]=[
   { name: 'Consultoría Jurídica' },
   { name: 'Gerencia de Seguimiento y Control Operativo' },
   { name: 'Gerencia de Planeación Estratégica' },
-  { name: 'Gerencia de Asesoría Legal y Dictámenes' },
+  { name: 'Gerencia de Asesoría Legal' },
   { name: 'Gerencia de Contrataciones' },
   { name: 'Gerencia de Litigios' },
   { name: 'Gerencia General de Planificación y Presupuesto' },
@@ -115,7 +124,7 @@ export const departments:Departments[]=[
   { name: 'Gerencia de Servicios Integrados' },
   { name: 'Gerencia de Ingreso, Clasificación y Egreso del Talento Humano ' },
   { name: 'Gerencia de Procesos Técnicos y Nominales de Gestión Humana' },
-  { name: 'Gerencia de Beneficios Socioeconómico y Contractuales' },
+  { name: 'Gerencia de Desarrollo y Bienestar Socioeconómico' },
   { name: 'Gerencia de Bienes Públicos' },
   { name: 'Gerencia de Contabilidad' },
   { name: 'Gerencia de Finanzas y Tesorería' },
@@ -123,6 +132,7 @@ export const departments:Departments[]=[
   { name: 'Gerencia de Gestión de Información y Contenidos' },
   { name: 'Gerencia de Medios Audiovisuales' },
   { name: 'Gerencia de Protocolo y Relaciones Interinstitucionales' },
+  { name: 'Gerencia General de Seguridad Integral'},
   { name: 'Gerencia de Seguridad Física y Patrimonial' },
   { name: 'Gerencia de Monitoreo y Control' },
   { name: 'Gerencia General del Observatorio Venezolano Antibloqueo ' },
@@ -153,6 +163,14 @@ export const departments:Departments[]=[
   { name: 'Gerencia de Modelos Asociativos' },
   { name: 'Coordinación de Estudios Socio-Productivo' },
   { name: 'Coordinación  de Modelos y Esquemas de Negocio' },
+  { name: 'Servicio Medico'},
+  { name: 'Instituto de Estudios Económicos y Tecnológicos'},
+  { name: 'Coordinación de Monitoreo y Registro de las MCU'},
+  { name: 'Coordinación de Estudios Económicos'},
+  { name: 'Coordinación de Análisis Estadísticos'},
+  { name: 'Coordinación de Gestión del Conocimiento'},
+  { name: ''}
+
 ]
 
 export const genders:Genders[]=[
@@ -227,7 +245,7 @@ export const type_creations:Type_creations[]=[
 ]
 
 
-const carnets: Carnet[] = [
+export const carnets: Carnet[] = [
     {
         //id: 1,
         name: "John",

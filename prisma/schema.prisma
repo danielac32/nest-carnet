@@ -144,7 +144,7 @@ model Carnets {
     name String?
     lastname String?
     card_code String?
-    expiration DateTime
+    expiration DateTime?
     note String?
     cedule String?
     //extent String?

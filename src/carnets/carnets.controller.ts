@@ -68,6 +68,10 @@ export class CarnetsController {
   }
 
   
+  @Post('codebar/:id')
+  getBarCode(@Param('id') id: string) {
+    return this.carnetsService.getBarcode(id);
+  }
 
   @Post('test/:id')
   test(@Param('id') id: string) {
@@ -107,6 +111,19 @@ export class CarnetsController {
 
 */
 
+  @UseGuards(JwtAuthGuard)
+  @Post('visitante')
+  createVisitante(@Body() createCarnetDto: CreateCarnetDto) {
+    return this.carnetsService.createVisitante(createCarnetDto);
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Post('asesor')
+  createAsesor(@Body() createCarnetDto: CreateCarnetDto) {
+    return this.carnetsService.createAsesor(createCarnetDto);
+  }
+
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -115,6 +132,11 @@ export class CarnetsController {
   }
 
 
+  @UseGuards(JwtAuthGuard)
+  @Get('getFilter')
+  getFilter(@Query('filter') filter: number,@Query('limit') limit: string,@Query('page') page: string) {
+       return this.carnetsService.getFilterCarnets(filter,+limit,+page);
+  }
 
 
   @UseGuards(JwtAuthGuard)
@@ -143,6 +165,11 @@ export class CarnetsController {
     return this.carnetsService.findOne(cedule);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Patch('updateVisitante/:id')
+  updateVisitante(@Param('id') id: string, @Body() updateCarnetDto: UpdateCarnetDto) {
+    return this.carnetsService.updateVisitante(id, updateCarnetDto);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
@@ -153,5 +180,10 @@ export class CarnetsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.carnetsService.remove(id);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Delete('deleteVisitante/:id')
+  removeVisitante(@Param('id') id: string) {
+    return this.carnetsService.removeVisitante(id);
   }
 }

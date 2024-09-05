@@ -23,6 +23,7 @@ export class CreateCarnetDto {
 
   @ApiProperty()
   @IsDate()
+  @IsOptional()
   @Type(() => Date)
   expiration: Date;
 

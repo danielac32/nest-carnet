@@ -122,7 +122,7 @@ CREATE TABLE "Carnets" (
     "name" TEXT,
     "lastname" TEXT,
     "card_code" TEXT,
-    "expiration" DATETIME NOT NULL,
+    "expiration" DATETIME,
     "note" TEXT,
     "cedule" TEXT,
     "address" TEXT,

@@ -24,7 +24,8 @@ import {levels,
         textures,
         type_creations,
         users,
-        charges
+        charges,
+        carnets
         } from './data'
 
 @Injectable()
@@ -74,6 +75,8 @@ export class SeederService {
     await fs.emptyDir(qrPath);
     await fs.emptyDir(uploadsPath);
     await fs.emptyDir(foto);
+    
+
     
     for (const charge of charges) {
           await this.prisma.charge.create({
@@ -163,6 +166,48 @@ export class SeederService {
           });
     }
     const getType_creation= await this.prisma.type_creations.findMany();
+    
+      /*for (const carnet of carnets) {
+            await this.prisma.carnets.create({
+              data: {
+                name: carnet.name,
+                lastname: carnet.lastname,
+                card_code: carnet.card_code,
+                expiration: carnet.expiration,
+                note: carnet.note,
+                cedule: carnet.cedule,
+                address: carnet.address,
+                cellpone: carnet.cellpone,
+
+                department: {
+                  connect: { id: carnet.department.id }
+                },
+                charge: {
+                  connect: { id: carnet.charge.id }
+                },
+                type_creations: {
+                  connect: carnet.type_creations.map(tc => ({ id: tc.id }))
+                },
+                status: {
+                  connect: { id: carnet.status.id }
+                },
+                access_levels: {
+                  connect: { id: carnet.access_levels.id }
+                },
+                 
+                 
+                state: {
+                  connect: { id: carnet.state.id }
+                },
+                 
+               
+                 
+                created_at: carnet.created_at,
+                updated_at: carnet.updated_at,
+              },
+            });
+      }*/
+
 
     return {
         getLevels,
