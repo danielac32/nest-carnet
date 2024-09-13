@@ -1036,16 +1036,16 @@ async removeVisitante(id: string) {
       },
     });
 
-    /*const barcodePath = path.join(__dirname, '..','..', 'barcodes',id+".png");
+    const barcodePath = path.join(__dirname, '..','..', 'barcodes',id+".png");
     const qrCodePath = path.join(__dirname, '..','..', 'qr',id+".png");
     const uploadPath = path.join(__dirname, '..', '..', 'tmp',id);
     const filePath = path.join(__dirname, '..','..', 'uploads',id);
 
 
-    await this.deleteFile(barcodePath);
-    await this.deleteFile(qrCodePath);
-    await this.deleteFile(uploadPath);
-    await this.deleteDir(filePath);*/
+    await this.utils.deleteFile(barcodePath);
+    await this.utils.deleteFile(qrCodePath);
+    await this.utils.deleteFile(uploadPath);
+    await this.utils.deleteDir(filePath);
     return {deletedCarnet}
   }
 }
