@@ -275,9 +275,10 @@ formatCedula(cedula: string) {
       await fs.unlink(filePath);
     } catch (error) {
       if (error.code === 'ENOENT') {
-        throw new NotFoundException(`File ${filePath} not found`);
+        //throw new NotFoundException(`File ${filePath} not found`);
       }
-      throw error;
+      //throw error;
+      console.log(`File ${filePath} not found`)
     }
   }
   async deleteDir(directoryPath: string): Promise<void> {
@@ -285,9 +286,10 @@ formatCedula(cedula: string) {
       await fs.rm(directoryPath, { recursive: true, force: true });
     } catch (error) {
       if (error.code === 'ENOENT') {
-        throw new NotFoundException(`Directory ${directoryPath} not found`);
+        //throw new NotFoundException(`Directory ${directoryPath} not found`);
       }
-      throw error;
+      //throw error;
+      console.log(`Directory ${directoryPath} not found`)
     }
   }
   

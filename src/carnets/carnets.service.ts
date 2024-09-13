@@ -18,7 +18,7 @@ const JsBarcode = require('jsbarcode');
 import * as CryptoJS from 'crypto-js';
 import {CarnetsUtils} from './carnets.utils'
 import {CarnetsImage} from './carnets.image'
-
+ 
 
 @Injectable()
 export class CarnetsService {
@@ -32,7 +32,7 @@ qrurl:string = process.env.QRURL;
     private image: CarnetsImage,
     ) {}
 
-  async getBarcode(id:string) {
+  async getBarcode(id:string) { 
     try{
         const carnet = await this.prisma.carnets.findFirst({
             where: {
@@ -186,47 +186,7 @@ async getFilterCarnets(filter: number, limit: number, page: number) {
                 carnets,
             };
   }
-
-/*
-  async generateBarcode(number: string, filename: string): Promise<string> {
-    try {
-      const barcodePath = path.join(__dirname, '..','..', 'barcodes'); // Directorio para guardar los códigos de barras
-      const barcodeFilePath = path.join(barcodePath, `${filename}.png`);
-
-      // Crear un lienzo (canvas) para el código de barras con dimensiones específicas
-      const canvas = createCanvas(400, 200); // Ancho y alto del lienzo en píxeles
-      await JsBarcode(canvas, number, { format: 'CODE128' });
-      // Asegúrate de que la carpeta de destino existe
-      await fs.ensureDir(barcodePath);
-      // Guardar el lienzo como archivo PNG
-      const out = fs.createWriteStream(barcodeFilePath);
-      const stream = canvas.createPNGStream();
-      stream.pipe(out);
-      // Esperar hasta que el archivo esté completamente escrito
-      await new Promise<void>((resolve, reject) => {
-        out.on('finish', resolve);
-        out.on('error', reject);
-      });
-      console.log("codigo de barra generado")
-      return barcodeFilePath; // Devolver la ruta del archivo guardado
-    } catch (error) {
-      throw new Error(`Failed to generate barcode: ${error.message}`);
-    }
-  }
-
-  async generateQrCode(data: string,cedule: string): Promise<string> {
-    try {
-      const qrCodePath = path.join(__dirname, '..','..', 'qr');
-      await fs.ensureDir(qrCodePath);
-      const qrCodeFilePath = path.join(qrCodePath, `${cedule}.png`);
-      await QRCode.toFile(qrCodeFilePath, data);
-     // this.makeCarnet2(`${cedule}.png`,cedule);
-      console.log("codigo qr generado")
-      return qrCodeFilePath; // Devolver la ruta del archivo guardado
-    } catch (error) {
-      throw new Error(`Failed to generate QR code: ${error.message}`);
-    }
-  }*/
+ 
 
 
 
@@ -305,6 +265,7 @@ async getFilterCarnets(filter: number, limit: number, page: number) {
 
       const person = await this.getProfile(cedule);
       if(!person) throw new HttpException('No existe el perfil', 500);
+
       await this.utils.generateBarcode(person.card_code, filename);
       await this.utils.generateQrCode(this.qrurl+"?id="+this.utils.encryptNumericString(cedule),filename);
       await this.makeCarnet(filename,cedule);
@@ -958,14 +919,10 @@ return {
      const carnet= await this.getCarnet(id);
     if(!carnet)throw new NotFoundException(`Entity with ID ${id} not found`);
     
-    console.log(updateCarnetDto)
+    //console.log(updateCarnetDto)
     const {type_creations,...data}= updateCarnetDto;
 
-    const barcodePath = path.join(__dirname, '..','..', 'barcodes',id+".png");
-    const qrCodePath = path.join(__dirname, '..','..', 'qr',id+".png");
-    const uploadPath = path.join(__dirname, '..', '..', 'tmp',id);
-    const filePath = path.join(__dirname, '..','..', 'uploads',id);
-
+    
 
     const { name,
             lastname,
@@ -991,7 +948,7 @@ return {
                     card_code: card_code
             }
         });
-   if(exist)throw new HttpException('Ya existe un carnet con ese Codigo', 500);
+   //if(exist)throw new HttpException('Ya existe un carnet con ese Codigo', 500);
 
 
     const updatedCarnet = await this.prisma.carnets.update({
@@ -1018,18 +975,28 @@ return {
           updated_at: new Date()
         }
     });
+    
+    const barcodePath = path.join(__dirname, '..','..', 'barcodes',id+".png");
+    const qrCodePath = path.join(__dirname, '..','..', 'qr',id+".png");
+    const uploadPath = path.join(__dirname, '..', '..', 'tmp',id);
+    const filePath = path.join(__dirname, '..','..', 'uploads',id);
+
+
 
     await this.utils.deleteFile(barcodePath);
     await this.utils.deleteFile(qrCodePath);
     await this.utils.deleteDir(filePath);
-      
+  
+
+    const person = await this.getProfile(cedule);
+    //si es 100 elimina la imagen actual,porque se enviara una de reemplazo
     if(type_creations==100){ //elimina la foto que ya esta guardada
       console.log("usar nueva foto")
       await this.utils.deleteFile(uploadPath);
-      
+      //await this.utils.generateBarcode(person.card_code, cedule);
+      //await this.utils.generateQrCode(this.qrurl+"?id="+this.utils.encryptNumericString(cedule),cedule);
     }else{// usa la foto  que ya esta guardada 
       console.log("usar vieja foto")
-      const person = await this.getProfile(cedule);
       if(!person) throw new HttpException('No existe el perfil', 500);
       await this.utils.generateBarcode(person.card_code, cedule);
       await this.utils.generateQrCode(this.qrurl+"?id="+this.utils.encryptNumericString(cedule),cedule);
@@ -1042,29 +1009,7 @@ return {
     };
   }
 
-
-/*
-  async deleteFile(filePath: string): Promise<void> {
-    try {
-      await fs.unlink(filePath);
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        throw new NotFoundException(`File ${filePath} not found`);
-      }
-      throw error;
-    }
-  }
-  async deleteDir(directoryPath: string): Promise<void> {
-    try {
-      await fs.rm(directoryPath, { recursive: true, force: true });
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        throw new NotFoundException(`Directory ${directoryPath} not found`);
-      }
-      throw error;
-    }
-  }*/
-  
+ 
 async removeVisitante(id: string) {
 
     const carnet= await this.getCarnet(id);
